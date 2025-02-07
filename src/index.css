@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .hover\:pause-animation:hover {
+    animation-play-state: paused !important;
+  }
+}
+
+.product-scroll {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000;
+  -webkit-perspective: 1000;
+  will-change: transform;
+}
+
+.product-scroll:hover,
+.product-scroll:hover * {
+  animation-play-state: paused !important;
+}
+
+.group\/list:hover * {
+  animation-play-state: paused !important;
+}

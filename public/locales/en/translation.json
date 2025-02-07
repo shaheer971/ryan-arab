@@ -1,0 +1,56 @@
+{
+  "navigation": {
+    "home": "Home",
+    "men": "Men",
+    "women": "Women",
+    "kids": "Kids",
+    "about": "About",
+    "contact": "Contact",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "login": "Login",
+    "signup": "Sign Up"
+  },
+  "footer": {
+    "description": "Premium footwear crafted with excellence since 1990. Quality, comfort, and style in every step.",
+    "quickLinks": "Quick Links",
+    "customerService": "Customer Service",
+    "contactInfo": "Contact Info",
+    "contactUs": "Contact Us",
+    "shipping": "Shipping Info",
+    "returns": "Returns & Exchanges",
+    "faq": "FAQ",
+    "rights": "All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch with our team",
+    "details": {
+      "title": "Our Location",
+      "address": "123 Fashion Street",
+      "city": "New York, NY 10001",
+      "emailTitle": "Email Us",
+      "email": "contact@ryanarabs.com",
+      "phoneTitle": "Call Us",
+      "phone": "+1 (555) 123-4567"
+    },
+    "hours": {
+      "title": "Business Hours",
+      "weekdays": "Monday - Friday: 9:00 AM - 6:00 PM",
+      "saturday": "Saturday: 10:00 AM - 4:00 PM",
+      "sunday": "Sunday: Closed"
+    },
+    "form": {
+      "name": "Your Name",
+      "email": "Your Email",
+      "message": "Your Message",
+      "submit": "Send Message"
+    }
+  },
+  "common": {
+    "viewCollection": "View Collection",
+    "explore": "Explore"
+  }
+}
