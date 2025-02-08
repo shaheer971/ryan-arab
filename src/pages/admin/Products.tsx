@@ -25,21 +25,42 @@ import AddProductForm from "@/components/admin/AddProductForm";
 import { supabase } from "@/integrations/supabase/client";
 import { Pencil, Trash2, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/utils";
+
+interface ProductVariant {
+  id: string;
+  variant_type: 'size' | 'color';
+  variant_value: string;
+  stock_quantity: number;
+  variant_sku: string;
+}
+
+interface ProductImage {
+  id: string;
+  url: string;
+  is_thumbnail: boolean;
+}
 
 interface Product {
   id: string;
   name: string;
+  name_arabic: string;
+  slug: string;
   price: number;
-  quantity: number;
-  sku: string;
-  status: string;
-  collection: string;
-  product_description?: string;
-  images: {
-    url: string;
-    alt_text?: string;
-  }[];
+  match_at_price: number | null;
   product_type: string;
+  quantity: number;
+  inventory_count: number;
+  sku: string;
+  collection: string;
+  status: string;
+  created_at: string;
+  product_variants: ProductVariant[];
+  product_images: ProductImage[];
+  product_description?: string;
 }
 
 const Products = () => {
@@ -58,37 +79,32 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       const { data, error } = await supabase
-        .from('products')
+        .from("products")
         .select(`
-          id,
-          name,
-          price,
-          quantity,
-          sku,
-          status,
-          collection,
-          product_description,
-          product_images (
-            url,
-            alt_text
+          *,
+          product_variants (
+            id,
+            variant_type,
+            variant_value,
+            stock_quantity,
+            variant_sku
           ),
-          product_type
+          product_images (
+            id,
+            url,
+            is_thumbnail
+          )
         `)
-        .order('created_at', { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      const productsWithImages = data?.map(product => ({
-        ...product,
-        images: product.product_images || []
-      })) || [];
-
-      setProducts(productsWithImages);
+      setProducts(data || []);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
       toast({
-        title: "Error fetching products",
-        description: "There was an error loading the products. Please try again.",
+        title: "Error",
+        description: "Failed to fetch products. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -125,6 +141,28 @@ const Products = () => {
     navigate(`/admin/products/edit/${productId}`);
   };
 
+  const getThumbnailUrl = (images: ProductImage[]) => {
+    const thumbnail = images.find(img => img.is_thumbnail);
+    return thumbnail?.url || images[0]?.url || '/placeholder-image.jpg';
+  };
+
+  const getVariantCount = (variants: ProductVariant[], type: 'size' | 'color') => {
+    return variants.filter(v => v.variant_type === type).length;
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'published':
+        return 'success';
+      case 'draft':
+        return 'secondary';
+      case 'archived':
+        return 'destructive';
+      default:
+        return 'default';
+    }
+  };
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.sku.toLowerCase().includes(searchTerm.toLowerCase());
@@ -139,10 +177,17 @@ const Products = () => {
     }} />;
   }
 
+  if (isLoading) {
+    return <div className="p-8">Loading products...</div>;
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Products</h1>
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Products</h1>
+          <p className="text-gray-500 mt-1">Manage your products</p>
+        </div>
         <Button onClick={() => setShowAddForm(true)}>Add New Product</Button>
       </div>
 
@@ -164,85 +209,77 @@ const Products = () => {
         </select>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Images</TableHead>
-            <TableHead>SKU</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Collection</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Stock</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredProducts.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell>
-                <div className="flex gap-1">
-                  {product.images && product.images.length > 0 ? (
-                    <div className="flex gap-1 overflow-x-auto max-w-[100px]">
-                      {product.images.slice(0, 3).map((image, index) => (
-                        <img
-                          key={index}
-                          src={image.url}
-                          alt={image.alt_text || `Product image ${index + 1}`}
-                          className="w-8 h-8 object-cover rounded-md"
-                        />
-                      ))}
-                      {product.images.length > 3 && (
-                        <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center">
-                          <span className="text-xs text-gray-500">+{product.images.length - 3}</span>
-                        </div>
-                      )}
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Image</TableHead>
+              <TableHead>Product Details</TableHead>
+              <TableHead>Variants</TableHead>
+              <TableHead>Inventory</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredProducts.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell>
+                  <img
+                    src={getThumbnailUrl(product.product_images)}
+                    alt={product.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="font-medium">{product.name}</div>
+                    <div className="text-sm text-gray-500">{product.name_arabic}</div>
+                    <div className="text-xs text-gray-400">SKU: {product.sku}</div>
+                    {product.product_description && (
+                      <div className="text-sm text-gray-500">{product.product_description}</div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <Badge variant="outline" className="mr-1">
+                      {getVariantCount(product.product_variants, 'size')} Sizes
+                    </Badge>
+                    <Badge variant="outline">
+                      {getVariantCount(product.product_variants, 'color')} Colors
+                    </Badge>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="text-sm">
+                      Total: {product.inventory_count}
                     </div>
-                  ) : (
-                    <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center">
-                      <Image className="w-4 h-4 text-gray-400" />
+                    <div className="text-xs text-gray-500">
+                      Available: {product.quantity}
                     </div>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>{product.sku}</TableCell>
-              <TableCell>
-                <div>
-                  <p className="font-medium">{product.name}</p>
-                  {product.product_description && (
-                    <p className="text-sm text-gray-500 truncate max-w-xs">
-                      {product.product_description}
-                    </p>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <span className="capitalize">{product.collection}</span>
-              </TableCell>
-              <TableCell>${product.price.toFixed(2)}</TableCell>
-              <TableCell>{product.quantity}</TableCell>
-              <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  product.status === 'published' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {product.status}
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="capitalize">{product.product_type}</span>
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleEdit(product.id)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="font-medium">
+                      {formatCurrency(product.price)}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={getStatusBadgeVariant(product.status)}>
+                    {product.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Link to={`/admin/products/edit/${product.id}`}>
+                    <Button variant="outline" size="sm">
+                      Edit
+                    </Button>
+                  </Link>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button 
@@ -271,12 +308,12 @@ const Products = () => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

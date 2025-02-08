@@ -81,7 +81,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">573</div>
             <div className="flex items-center mt-1">
-              <Badge className="bg-blue-500/10 text-blue-500">
+              <Badge className="bg-green-500/10 text-green-500">
                 <ShoppingBag className="w-3 h-3 mr-1" />
                 +201
               </Badge>

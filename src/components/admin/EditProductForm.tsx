@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ProductFormFields } from "./product/ProductFormFields";
 import { ProductImagesSection } from "./product/ProductImagesSection";
 import { validateProductForm, uploadProductImages } from "./utils/product-form-utils";
-import { ProductFormData, EditProductFormProps, ProductImage } from "./types/product-form";
+import { ProductFormData, EditProductFormProps, ProductImage, VariantOption } from "./types/product-form";
 
 interface ProductResponse {
   id: string;
@@ -22,6 +22,13 @@ interface ProductResponse {
   product_description_arabic: string;
   status: string;
   product_images: ProductImage[];
+  product_variants: {
+    id: string;
+    variant_type: string;
+    variant_value: string;
+    stock_quantity: number;
+    variant_sku: string;
+  }[];
 }
 
 const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
@@ -45,6 +52,8 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
     product_description_arabic: "",
     status: "published",
     title: "",
+    sizeVariants: [],
+    colorVariants: [],
   });
 
   const fetchProductData = useCallback(async () => {
@@ -74,6 +83,13 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
             position,
             is_thumbnail,
             product_id
+          ),
+          product_variants (
+            id,
+            variant_type,
+            variant_value,
+            stock_quantity,
+            variant_sku
           )
         `)
         .eq('id', productId)
@@ -96,6 +112,20 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
           product_description_arabic: typedProduct.product_description_arabic || "",
           status: typedProduct.status as "published" | "draft",
           title: typedProduct.name || "",
+          sizeVariants: typedProduct.product_variants
+            .filter((v: any) => v.variant_type === 'size')
+            .map((v: any) => ({
+              value: v.variant_value,
+              stock_quantity: v.stock_quantity,
+              sku: v.variant_sku,
+            })),
+          colorVariants: typedProduct.product_variants
+            .filter((v: any) => v.variant_type === 'color')
+            .map((v: any) => ({
+              value: v.variant_value,
+              stock_quantity: v.stock_quantity,
+              sku: v.variant_sku,
+            })),
         });
         setExistingImages(typedProduct.product_images || []);
       }
@@ -128,6 +158,48 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
+  };
+
+  const handleVariantChange = (type: 'size' | 'color', index: number, value: string, field: string) => {
+    setFormData((prev) => {
+      const variants = type === 'size' ? [...prev.sizeVariants] : [...prev.colorVariants];
+      variants[index] = {
+        ...variants[index],
+        [field]: field === 'stock_quantity' ? Number(value) : value,
+      };
+      return {
+        ...prev,
+        [type === 'size' ? 'sizeVariants' : 'colorVariants']: variants,
+      };
+    });
+  };
+
+  const handleAddVariant = (type: 'size' | 'color') => {
+    setFormData((prev) => {
+      const newVariant: VariantOption = {
+        value: '',
+        stock_quantity: 0,
+        sku: '',
+      };
+      return {
+        ...prev,
+        [type === 'size' ? 'sizeVariants' : 'colorVariants']: [
+          ...(type === 'size' ? prev.sizeVariants : prev.colorVariants),
+          newVariant,
+        ],
+      };
+    });
+  };
+
+  const handleRemoveVariant = (type: 'size' | 'color', index: number) => {
+    setFormData((prev) => {
+      const variants = type === 'size' ? [...prev.sizeVariants] : [...prev.colorVariants];
+      variants.splice(index, 1);
+      return {
+        ...prev,
+        [type === 'size' ? 'sizeVariants' : 'colorVariants']: variants,
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,6 +241,45 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
 
       if (productError) throw productError;
 
+      // Delete existing variants
+      const { error: deleteVariantsError } = await supabase
+        .from("product_variants")
+        .delete()
+        .eq("product_id", productId);
+
+      if (deleteVariantsError) throw deleteVariantsError;
+
+      // Insert new variants
+      if (formData.sizeVariants.length > 0) {
+        const { error: sizeError } = await supabase
+          .from("product_variants")
+          .insert(
+            formData.sizeVariants.map((variant) => ({
+              product_id: productId,
+              variant_type: 'size',
+              variant_value: variant.value,
+              stock_quantity: Number(variant.stock_quantity),
+              variant_sku: variant.sku || `${formData.sku}-${variant.value}`,
+            }))
+          );
+        if (sizeError) throw sizeError;
+      }
+
+      if (formData.colorVariants.length > 0) {
+        const { error: colorError } = await supabase
+          .from("product_variants")
+          .insert(
+            formData.colorVariants.map((variant) => ({
+              product_id: productId,
+              variant_type: 'color',
+              variant_value: variant.value,
+              stock_quantity: Number(variant.stock_quantity),
+              variant_sku: variant.sku || `${formData.sku}-${variant.value.toLowerCase()}`,
+            }))
+          );
+        if (colorError) throw colorError;
+      }
+
       if (selectedImages.length > 0) {
         await uploadProductImages(productId!, selectedImages, existingImages);
       }
@@ -209,6 +320,9 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
         errors={errors}
         handleInputChange={handleInputChange}
         handleSelectChange={handleSelectChange}
+        handleVariantChange={handleVariantChange}
+        handleAddVariant={handleAddVariant}
+        handleRemoveVariant={handleRemoveVariant}
       />
 
       <ProductImagesSection

@@ -10,19 +10,25 @@ export interface ProductImage {
   product_id: string;
 }
 
+export interface VariantOption {
+  value: string;
+  stock_quantity: number;
+  sku: string;
+}
+
 export interface ProductFormData {
   name: string;
   name_arabic: string;
   price: string;
   match_at_price: string;
-  product_type: "men" | "women";
+  product_type: string;
   quantity: string;
   sku: string;
-  collection: "casual" | "sneakers" | "dress shoes" | "sandals and slippers";
+  collection: string;
   product_description: string;
   product_description_arabic: string;
-  status: "published" | "draft";
-  title: string;
+  sizeVariants: VariantOption[];
+  colorVariants: VariantOption[];
 }
 
 export interface EditProductFormProps {
@@ -37,9 +43,10 @@ export interface ProductFormFieldsProps {
 }
 
 export interface ProductImagesSectionProps {
-  productId: string;
-  existingImages: ProductImage[];
-  setExistingImages: (images: ProductImage[]) => void;
+  productId?: string;
+  existingImages?: ProductImage[];
+  setExistingImages?: (images: ProductImage[]) => void;
   selectedImages: File[];
   setSelectedImages: (files: File[]) => void;
+  error?: string;
 }

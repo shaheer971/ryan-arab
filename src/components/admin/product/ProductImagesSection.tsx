@@ -9,10 +9,11 @@ import { ProductImage, ProductImagesSectionProps } from "../types/product-form";
 
 export const ProductImagesSection = ({
   productId,
-  existingImages,
+  existingImages = [],
   setExistingImages,
   selectedImages,
-  setSelectedImages
+  setSelectedImages,
+  error
 }: ProductImagesSectionProps) => {
   const { toast } = useToast();
 
@@ -29,6 +30,8 @@ export const ProductImagesSection = ({
   };
 
   const removeExistingImage = async (imageId: string) => {
+    if (!setExistingImages || !productId) return;
+
     try {
       const imageToDelete = existingImages.find(img => img.id === imageId);
       if (!imageToDelete) return;
@@ -52,36 +55,56 @@ export const ProductImagesSection = ({
       setExistingImages(existingImages.filter(img => img.id !== imageId));
       
       toast({
-        title: "Image removed",
-        description: "Image has been removed successfully.",
+        title: "Success",
+        description: "Image removed successfully",
       });
     } catch (error) {
       console.error('Error removing image:', error);
       toast({
-        title: "Error removing image",
-        description: "Could not remove image. Please try again.",
+        title: "Error",
+        description: "Failed to remove image. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div>
-      <Label>Product Images *</Label>
-      <div className="mt-2 space-y-4">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label>Product Images {!productId && '*'}</Label>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => document.getElementById('image-upload')?.click()}
+        >
+          <Upload className="w-4 h-4 mr-2" />
+          Upload Images
+        </Button>
+        <Input
+          id="image-upload"
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleImageChange}
+        />
+      </div>
+
+      <div className="space-y-6">
         {existingImages.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {existingImages.map((image: ProductImage) => (
-              <div key={image.id} className="relative group bg-gray-50 rounded-lg p-2 border border-gray-200">
+              <div key={image.id} className="relative group">
                 <img
                   src={image.url}
                   alt="Product"
-                  className="w-full h-32 object-cover rounded-lg shadow-sm"
+                  className="w-full h-32 object-cover rounded-lg"
                 />
                 <button
                   type="button"
                   onClick={() => removeExistingImage(image.id)}
-                  className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -90,44 +113,19 @@ export const ProductImagesSection = ({
           </div>
         )}
 
-        <div className="flex items-center gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            className={`w-full flex items-center justify-center py-6 border-2 border-dashed ${
-              existingImages.length === 0 && selectedImages.length === 0
-                ? "border-red-500 hover:border-red-600"
-                : "hover:border-primary/50"
-            } transition-colors`}
-            onClick={() => document.getElementById('image-upload')?.click()}
-          >
-            <Upload className="w-5 h-5 mr-2" />
-            Upload New Images
-          </Button>
-          <Input
-            id="image-upload"
-            type="file"
-            accept="image/*"
-            multiple
-            required={existingImages.length === 0 && selectedImages.length === 0}
-            className="hidden"
-            onChange={handleImageChange}
-          />
-        </div>
-        
         {selectedImages.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {selectedImages.map((file: File, index: number) => (
-              <div key={index} className="relative group bg-gray-50 rounded-lg p-2 border border-gray-200">
+            {selectedImages.map((file, index) => (
+              <div key={index} className="relative group">
                 <img
                   src={URL.createObjectURL(file)}
                   alt={`Preview ${index + 1}`}
-                  className="w-full h-32 object-cover rounded-lg shadow-sm"
+                  className="w-full h-32 object-cover rounded-lg"
                 />
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -135,9 +133,8 @@ export const ProductImagesSection = ({
             ))}
           </div>
         )}
-        {existingImages.length === 0 && selectedImages.length === 0 && (
-          <p className="text-red-500 text-sm mt-1">At least one product image is required</p>
-        )}
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
     </div>
   );
