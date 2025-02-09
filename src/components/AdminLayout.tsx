@@ -37,6 +37,7 @@ const AdminLayout = ({ mobileMenuOpen, setMobileMenuOpen }: AdminLayoutProps) =>
     { icon: Package, label: "Products", path: "/admin/products" },
     { icon: ShoppingCart, label: "Orders", path: "/admin/orders" },
     { icon: Users, label: "Customers", path: "/admin/customers" },
+    { icon: Users, label: "Users", path: "/admin/users" },
     { icon: Palette, label: "Website Editor", path: "/admin/website-editor" },
     { icon: Settings, label: "Settings", path: "/admin/settings" },
   ];

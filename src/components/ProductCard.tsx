@@ -12,27 +12,28 @@ import { motion } from "framer-motion";
 
 interface ProductCardProps {
   id: string;
+  slug: string;
   name: string;
   price: number;
+  match_at_price?: number;
   image: string;
   category: string;
-  isNew?: boolean;
-  isSale?: boolean;
-  discount?: number;
   tags?: string[];
 }
 
 const ProductCard = ({
   id,
+  slug,
   name,
   price,
+  match_at_price,
   image,
   category,
-  isNew,
-  isSale,
-  discount,
   tags = [],
 }: ProductCardProps) => {
+  const isOnSale = match_at_price && match_at_price > price;
+  const discount = isOnSale ? Math.round(((match_at_price - price) / match_at_price) * 100) : undefined;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -41,7 +42,7 @@ const ProductCard = ({
     >
       <Card className="group overflow-hidden hover-lift">
         <CardHeader className="p-0">
-          <Link to={`/product/${id}`} className="relative block">
+          <Link to={`/product/${slug}`} className="relative block">
             {/* Product Image */}
             <div className="aspect-square overflow-hidden bg-gray-100">
               <img
@@ -53,10 +54,7 @@ const ProductCard = ({
             
             {/* Tags Overlay */}
             <div className="absolute top-2 left-2 flex flex-wrap gap-2">
-              {isNew && (
-                <Badge className="bg-primary text-white">New Arrival</Badge>
-              )}
-              {isSale && (
+              {isOnSale && (
                 <Badge className="bg-red-500 text-white">
                   {discount}% OFF
                 </Badge>
@@ -85,7 +83,7 @@ const ProductCard = ({
 
         <CardContent className="p-4">
           <Link
-            to={`/product/${id}`}
+            to={`/product/${slug}`}
             className="block font-medium hover:text-primary transition-colors text-sm sm:text-base line-clamp-2"
           >
             {name}
@@ -95,13 +93,13 @@ const ProductCard = ({
 
         <CardFooter className="p-4 pt-0 flex flex-col gap-2">
           <div className="space-x-2">
-            {isSale ? (
+            {isOnSale ? (
               <>
                 <span className="text-base sm:text-lg font-bold text-primary">
-                  ${(price * (1 - discount! / 100)).toFixed(2)}
+                  ${price.toFixed(2)}
                 </span>
                 <span className="text-xs sm:text-sm text-gray-500 line-through">
-                  ${price.toFixed(2)}
+                  ${match_at_price.toFixed(2)}
                 </span>
               </>
             ) : (

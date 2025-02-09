@@ -22,7 +22,8 @@ const Home = () => {
       image: "https://images.unsplash.com/photo-1549298916-b41d501d3772",
       category: "Men's Shoes",
       isNew: true,
-      tags: ["Leather", "Formal"]
+      tags: ["Leather", "Formal"],
+      slug: "classic-leather-oxford"
     },
     {
       id: "2",
@@ -32,7 +33,8 @@ const Home = () => {
       category: "Women's Shoes",
       isSale: true,
       discount: 20,
-      tags: ["Evening", "Heels"]
+      tags: ["Evening", "Heels"],
+      slug: "elegant-heels"
     },
     {
       id: "3",
@@ -40,7 +42,8 @@ const Home = () => {
       price: 79.99,
       image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2",
       category: "Kids' Shoes",
-      tags: ["Sport", "Casual"]
+      tags: ["Sport", "Casual"],
+      slug: "kids-sport-sneakers"
     },
     {
       id: "4",
@@ -48,7 +51,8 @@ const Home = () => {
       price: 129.99,
       image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509",
       category: "Men's Shoes",
-      tags: ["Casual", "Comfort"]
+      tags: ["Casual", "Comfort"],
+      slug: "casual-loafers"
     }
   ];
 
@@ -69,26 +73,26 @@ const Home = () => {
     {
       title: "Sneakers",
       image: "https://images.unsplash.com/photo-1549298916-b41d501d3772",
-      menLink: "/men/sneakers",
-      womenLink: "/women/sneakers"
+      menLink: "/mens?collection=sneakers",
+      womenLink: "/womens?collection=sneakers"
     },
     {
       title: "Casual",
       image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509",
-      menLink: "/men/casual",
-      womenLink: "/women/casual"
+      menLink: "/mens?collection=casual",
+      womenLink: "/womens?collection=casual"
     },
     {
       title: "Dress Shoes",
       image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d",
-      menLink: "/men/dress-shoes",
-      womenLink: "/women/dress-shoes"
+      menLink: "/mens?collection=dress-shoes",
+      womenLink: "/womens?collection=dress-shoes"
     },
     {
       title: "Sandals and Slippers",
       image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2",
-      menLink: "/men/sandals",
-      womenLink: "/women/sandals"
+      menLink: "/mens?collection=sandals",
+      womenLink: "/womens?collection=sandals"
     }
   ];
 
@@ -232,7 +236,8 @@ const Home = () => {
                       category: "Men's Shoes",
                       isSale: true,
                       discount: 30,
-                      tags: ["Leather", "Formal"]
+                      tags: ["Leather", "Formal"],
+                      slug: "premium-leather-derby"
                     },
                     {
                       id: "sale2",
@@ -242,7 +247,8 @@ const Home = () => {
                       category: "Women's Shoes",
                       isSale: true,
                       discount: 40,
-                      tags: ["Designer", "Evening"]
+                      tags: ["Designer", "Evening"],
+                      slug: "designer-high-heels"
                     },
                     {
                       id: "sale3",
@@ -252,7 +258,8 @@ const Home = () => {
                       category: "Sport Shoes",
                       isSale: true,
                       discount: 25,
-                      tags: ["Sport", "Comfort"]
+                      tags: ["Sport", "Comfort"],
+                      slug: "comfort-sport-shoes"
                     },
                     {
                       id: "sale4",
@@ -262,7 +269,8 @@ const Home = () => {
                       category: "Men's Shoes",
                       isSale: true,
                       discount: 35,
-                      tags: ["Suede", "Winter"]
+                      tags: ["Suede", "Winter"],
+                      slug: "classic-suede-boots"
                     },
                     {
                       id: "sale5",
@@ -272,7 +280,8 @@ const Home = () => {
                       category: "Men's Shoes",
                       isSale: true,
                       discount: 45,
-                      tags: ["Limited", "Casual"]
+                      tags: ["Limited", "Casual"],
+                      slug: "limited-edition-sneakers"
                     }
                   ].map((product) => (
                     <div 

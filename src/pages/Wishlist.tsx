@@ -1,97 +1,178 @@
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, X, ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useToast } from "@/components/ui/use-toast";
+import { Trash2, Heart, LogIn } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const Wishlist = () => {
-  const { t } = useTranslation();
-  
-  const wishlistItems = [
-    {
-      id: '1',
-      name: 'Classic Oxford',
-      price: 295,
-      color: 'Brown',
-      availability: 'In Stock',
-      image: 'https://images.unsplash.com/photo-1491553895911-0055eca6402d',
-    },
-    {
-      id: '2',
-      name: 'Leather Loafer',
-      price: 275,
-      color: 'Black',
-      availability: 'Low Stock',
-      image: 'https://images.unsplash.com/photo-1533867617858-e7b97e060509',
-    },
-  ];
+const WishlistPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="pt-24 pb-16 font-jakarta"
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <h1 className="text-4xl font-bold">
-            {t('navigation.wishlist')}
-          </h1>
-        </div>
-        
-        <div className="max-w-4xl mx-auto">
-          {wishlistItems.map((item) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center gap-6 border rounded-lg p-4 mb-4 hover:shadow-md transition-shadow"
-            >
-              <Link to={`/product/${item.id}`} className="w-24 h-24 bg-gray-100 rounded-md overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover transition-transform hover:scale-105"
-                />
-              </Link>
-              <div className="flex-1">
-                <Link to={`/product/${item.id}`}>
-                  <h3 className="font-medium text-lg hover:text-primary transition-colors">
-                    {item.name}
-                  </h3>
-                </Link>
-                <p className="text-gray-600 mt-1">Color: {item.color}</p>
-                <p className="text-primary font-medium mt-1">${item.price}</p>
-                <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm ${
-                  item.availability === 'In Stock' 
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {item.availability}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Button className="bg-primary hover:bg-primary-dark">
-                  <ShoppingBag className="h-4 w-4 mr-2" />
-                  Add to Cart
-                </Button>
-                <Button variant="ghost" size="icon" className="text-gray-400 hover:text-red-500">
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            </motion.div>
-          ))}
+  // Fetch wishlist items only if user is logged in
+  const { data: wishlistItems, isLoading } = useQuery({
+    queryKey: ["wishlist", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data: wishlistData, error: wishlistError } = await supabase
+        .from("wishlists")
+        .select(`
+          id,
+          product_id,
+          products (
+            id,
+            name,
+            name_arabic,
+            slug,
+            price,
+            match_at_price,
+            product_type,
+            collection,
+            product_images (
+              id,
+              url,
+              is_thumbnail
+            )
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (wishlistError) throw wishlistError;
+      return wishlistData || [];
+    },
+    enabled: !!user,
+  });
+
+  // Remove from wishlist mutation
+  const removeFromWishlist = useMutation({
+    mutationFn: async (wishlistId: string) => {
+      const { error } = await supabase
+        .from("wishlists")
+        .delete()
+        .eq("id", wishlistId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      toast({
+        title: "Removed from wishlist",
+        description: "The item has been removed from your wishlist.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to remove item from wishlist. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Show loading state while checking authentication and fetching data
+  if (user && isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Show login prompt for unauthenticated users
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
+          <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <Heart className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <h2 className="text-xl font-semibold mb-4">Sign in to view your wishlist</h2>
+            <p className="text-gray-600 mb-6">
+              Create an account or sign in to save your favorite items and access them from any device.
+            </p>
+            <Button onClick={() => navigate("/login")} className="gap-2">
+              <LogIn className="h-4 w-4" />
+              Sign In
+            </Button>
+          </div>
         </div>
       </div>
-    </motion.div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4">
+        <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
+
+        {wishlistItems?.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <Heart className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <h2 className="text-xl font-semibold mb-4">Your wishlist is empty</h2>
+            <p className="text-gray-600 mb-6">
+              Add items to your wishlist to keep track of products you love.
+            </p>
+            <Button onClick={() => navigate("/")}>Continue Shopping</Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <AnimatePresence>
+              {wishlistItems?.map((item) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="bg-white rounded-lg shadow overflow-hidden"
+                >
+                  <div className="aspect-square relative">
+                    <img
+                      src={item.products.product_images?.[0]?.url || "/placeholder.svg"}
+                      alt={item.products.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={() => removeFromWishlist.mutate(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="p-4">
+                    <h3
+                      className="font-medium mb-2 hover:text-primary cursor-pointer"
+                      onClick={() => navigate(`/product/${item.products.slug}`)}
+                    >
+                      {item.products.name}
+                    </h3>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-lg font-bold text-primary">
+                        ${item.products.price.toFixed(2)}
+                      </span>
+                      {item.products.match_at_price && (
+                        <span className="text-sm text-gray-500 line-through">
+                          ${item.products.match_at_price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
-export default Wishlist;
+export default WishlistPage;

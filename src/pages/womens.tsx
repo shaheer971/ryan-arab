@@ -17,24 +17,34 @@ const Womens = () => {
         .select(`
           id,
           name,
+          name_arabic,
+          slug,
+          title,
           price,
-          product_description,
-          collection,
+          match_at_price,
           product_type,
+          quantity,
+          inventory_count,
+          sku,
+          collection,
+          product_description,
+          product_description_arabic,
           status,
-          is_featured,
-          is_on_sale,
-          sale_price,
+          created_at,
+          updated_at,
           product_images (
             id,
             url,
-            is_thumbnail,
-            position
+            filename,
+            original_filename,
+            size_bytes,
+            mime_type,
+            position,
+            is_thumbnail
           )
         `)
         .eq('product_type', 'women')
-        .eq('status', 'published')
-        .order('created_at', { ascending: false });
+        .eq('status', 'published');
 
       if (error) {
         console.error("Error fetching products:", error);
@@ -145,16 +155,14 @@ const Womens = () => {
                             transition={{ duration: 0.5, delay: productIndex * 0.1 }}
                           >
                             <ProductCard
+                              key={product.id}
                               id={product.id}
+                              slug={product.slug}
                               name={product.name}
                               price={product.price}
+                              match_at_price={product.match_at_price}
                               image={product.product_images?.[0]?.url || '/placeholder.svg'}
                               category={product.collection}
-                              isNew={product.is_featured}
-                              isSale={product.is_on_sale}
-                              discount={product.sale_price ? 
-                                Math.round(((product.price - product.sale_price) / product.price) * 100) : 
-                                undefined}
                               tags={[product.collection]}
                             />
                           </motion.div>

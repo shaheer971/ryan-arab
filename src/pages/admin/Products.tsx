@@ -170,52 +170,19 @@ const Products = () => {
     return matchesSearch && matchesFilter;
   });
 
-  if (showAddForm) {
-    return <AddProductForm onSuccess={() => {
-      setShowAddForm(false);
-      fetchProducts();
-    }} />;
-  }
+  const menProducts = filteredProducts.filter(product => product.product_type === 'men');
+  const womenProducts = filteredProducts.filter(product => product.product_type === 'women');
 
-  if (isLoading) {
-    return <div className="p-8">Loading products...</div>;
-  }
-
-  return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Products</h1>
-          <p className="text-gray-500 mt-1">Manage your products</p>
-        </div>
-        <Button onClick={() => setShowAddForm(true)}>Add New Product</Button>
-      </div>
-
-      <div className="flex gap-4 items-center">
-        <Input
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border rounded-md p-2"
-        >
-          <option value="all">All Status</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
-      </div>
-
+  const renderProductTable = (products: Product[], title: string) => (
+    <div className="mb-8">
+      <h2 className="text-xl font-semibold mb-4">{title}</h2>
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Image</TableHead>
               <TableHead>Product Details</TableHead>
-              <TableHead>Variants</TableHead>
+              <TableHead>Collection</TableHead>
               <TableHead>Inventory</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
@@ -223,7 +190,7 @@ const Products = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>
                   <img
@@ -237,20 +204,12 @@ const Products = () => {
                     <div className="font-medium">{product.name}</div>
                     <div className="text-sm text-gray-500">{product.name_arabic}</div>
                     <div className="text-xs text-gray-400">SKU: {product.sku}</div>
-                    {product.product_description && (
-                      <div className="text-sm text-gray-500">{product.product_description}</div>
-                    )}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="space-y-1">
-                    <Badge variant="outline" className="mr-1">
-                      {getVariantCount(product.product_variants, 'size')} Sizes
-                    </Badge>
-                    <Badge variant="outline">
-                      {getVariantCount(product.product_variants, 'color')} Colors
-                    </Badge>
-                  </div>
+                  <Badge variant="outline">
+                    {product.collection}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
@@ -267,6 +226,11 @@ const Products = () => {
                     <div className="font-medium">
                       {formatCurrency(product.price)}
                     </div>
+                    {product.match_at_price && (
+                      <div className="text-sm text-gray-500 line-through">
+                        {formatCurrency(product.match_at_price)}
+                      </div>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -314,6 +278,53 @@ const Products = () => {
           </TableBody>
         </Table>
       </div>
+    </div>
+  );
+
+  if (showAddForm) {
+    return <AddProductForm onSuccess={() => {
+      setShowAddForm(false);
+      fetchProducts();
+    }} />;
+  }
+
+  if (isLoading) {
+    return <div className="p-8">Loading products...</div>;
+  }
+
+  return (
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Products</h1>
+          <p className="text-gray-500 mt-1">Manage your products</p>
+        </div>
+        <Button onClick={() => setShowAddForm(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add New Product
+        </Button>
+      </div>
+
+      <div className="flex gap-4 items-center mb-6">
+        <Input
+          placeholder="Search products..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="border rounded-md p-2"
+        >
+          <option value="all">All Status</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
+      </div>
+
+      {renderProductTable(menProducts, "Men's Products")}
+      {renderProductTable(womenProducts, "Women's Products")}
     </div>
   );
 };

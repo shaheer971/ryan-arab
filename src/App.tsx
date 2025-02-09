@@ -36,6 +36,7 @@ const Dashboard = lazyLoad(() => import("./pages/admin/Dashboard"));
 const Products = lazyLoad(() => import("./pages/admin/Products"));
 const Orders = lazyLoad(() => import("./pages/admin/Orders"));
 const Customers = lazyLoad(() => import("./pages/admin/Customers"));
+const Users = lazyLoad(() => import("./pages/admin/Users"));
 const WebsiteEditor = lazyLoad(() => import("./pages/admin/WebsiteEditor"));
 const Settings = lazyLoad(() => import("./pages/admin/Settings"));
 const Mens = lazyLoad(() => import("./pages/mens"));
@@ -77,20 +78,20 @@ const RoutePreloader = () => {
 
 const App = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { setUser } = useAuthStore();
+  const { setUser, isAdmin } = useAuthStore();
 
   useEffect(() => {
     // Initialize auth state
     const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        setUser(session.user);
+        await setUser(session.user);
       }
     };
 
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await setUser(session?.user || null);
     });
 
     initAuth();
@@ -107,7 +108,7 @@ const App = () => {
           <div className="min-h-screen flex flex-col">
             <Navigation 
               onAdminMenuClick={() => setMobileMenuOpen(true)} 
-              isAdmin={true}
+              isAdmin={isAdmin}
             />
             <RoutePreloader />
             <Suspense
@@ -121,22 +122,23 @@ const App = () => {
                 <Routes>
                   <Route path="/index" element={<Index />} />
                   <Route path="/" element={<Home />} />
-                  <Route path="/mens" element={<Mens />} />
-                  <Route path="/womens" element={<Womens />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/category/:category" element={<CategoryPage />} />
+                  <Route path="/login" element={<Login />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/product/:productId" element={<ProductPage />} />
-                  <Route path="/category/:categoryId" element={<CategoryPage />} />
-                  <Route path="/login" element={<Login />} />
+                  <Route path="/product/:slug" element={<ProductPage />} />
+                  <Route path="/mens" element={<Mens />} />
+                  <Route path="/womens" element={<Womens />} />
                   <Route path="/admin" element={<AdminLayout mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />}>
                     <Route index element={<Dashboard />} />
                     <Route path="products" element={<Products />} />
                     <Route path="products/edit/:productId" element={<EditProductForm />} />
                     <Route path="orders" element={<Orders />} />
                     <Route path="customers" element={<Customers />} />
+                    <Route path="users" element={<Users />} />
                     <Route path="website-editor" element={<WebsiteEditor />} />
                     <Route path="settings" element={<Settings />} />
                   </Route>

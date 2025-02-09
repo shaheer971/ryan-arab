@@ -14,3 +14,15 @@ export function formatCurrency(amount: number | string): string {
     maximumFractionDigits: 2,
   }).format(numericAmount);
 }
+
+export function formatDate(date: string | Date): string {
+  const d = new Date(date);
+  return new Intl.DateTimeFormat('en-SA', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).format(d);
+}

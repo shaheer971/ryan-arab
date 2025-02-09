@@ -175,9 +175,10 @@ export const ProductFormFields = ({
                 <SelectValue placeholder="Select collection" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="sneakers">Sneakers</SelectItem>
                 <SelectItem value="casual">Casual</SelectItem>
-                <SelectItem value="formal">Formal</SelectItem>
-                <SelectItem value="sports">Sports</SelectItem>
+                <SelectItem value="dress shoes">Dress Shoes</SelectItem>
+                <SelectItem value="sandals">Sandals and Slippers</SelectItem>
               </SelectContent>
             </Select>
           </div>
