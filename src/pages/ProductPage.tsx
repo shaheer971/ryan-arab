@@ -1,270 +1,183 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthStore } from "@/store/useAuthStore";
+import { formatCurrency } from "@/lib/utils";
+import { Heart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ProductImageGallery from "@/components/ProductImageGallery";
-import { Heart, ArrowLeft, Star } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { useState, useMemo, useEffect } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useMutation } from "@tanstack/react-query";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+
+interface ProductVariant {
+  id: string;
+  variant_type: 'size' | 'color';
+  variant_value: string;
+  stock_quantity: number;
+  variant_sku: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  name_arabic: string;
+  price: number;
+  match_at_price: number | null;
+  description: string;
+  product_images: { url: string; is_thumbnail: boolean }[];
+  product_variants: ProductVariant[];
+}
 
 const ProductPage = () => {
   const params = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuthStore();
-  const queryClient = useQueryClient();
-
+  const user = useAuthStore((state) => state.user);
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', params.slug],
     queryFn: async () => {
-      console.log("Fetching product with slug:", params.slug);
-      
-      if (!params.slug) throw new Error('Product slug is required');
-      
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          id,
-          name,
-          name_arabic,
-          slug,
-          title,
-          price,
-          match_at_price,
-          product_type,
-          quantity,
-          inventory_count,
-          sku,
-          collection,
-          product_description,
-          product_description_arabic,
-          status,
-          created_at,
-          updated_at,
-          product_images (
-            id,
-            url,
-            filename,
-            original_filename,
-            size_bytes,
-            mime_type,
-            position,
-            is_thumbnail
-          )
-        `)
-        .eq('slug', params.slug)
-        .eq('status', 'published')
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            product_images (
+              url,
+              is_thumbnail
+            ),
+            product_variants (
+              id,
+              variant_type,
+              variant_value,
+              stock_quantity,
+              variant_sku
+            )
+          `)
+          .eq('slug', params.slug)
+          .single();
 
-      if (error) {
-        console.error("Error fetching product:", error);
-        throw error;
-      }
-
-      console.log("Fetched product data:", data);
-
-      if (!data) {
-        console.error("No product found with slug:", params.slug);
-        throw new Error('Product not found');
-      }
-
-      // Sort images to ensure thumbnails come first
-      if (data.product_images) {
-        data.product_images.sort((a, b) => {
-          if (a.is_thumbnail && !b.is_thumbnail) return -1;
-          if (!a.is_thumbnail && b.is_thumbnail) return 1;
-          return (a.position || 0) - (b.position || 0);
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load product details",
+          variant: "destructive",
         });
       }
-
-      // After we have the product, fetch its variants
-      const { data: variants, error: variantsError } = await supabase
-        .from('product_variants')
-        .select('*')
-        .eq('product_id', data.id);
-
-      if (variantsError) {
-        console.error("Error fetching variants:", variantsError);
-      } else if (variants) {
-        data.product_variants = variants;
-        
-        // Group variants by type
-        const variantsByType = variants.reduce((acc, variant) => {
-          if (!acc[variant.variant_type]) {
-            acc[variant.variant_type] = new Set();
-          }
-          acc[variant.variant_type].add(variant.variant_value);
-          return acc;
-        }, {});
-
-        // Convert Sets to arrays
-        data.variantOptions = Object.entries(variantsByType).reduce((acc, [type, values]) => {
-          acc[type] = Array.from(values);
-          return acc;
-        }, {});
-      }
-
-      return data;
     },
     retry: false
   });
 
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  const [selectedOptions, setSelectedOptions] = useState({});
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
 
-  // Find matching variant based on selected options
   useEffect(() => {
-    if (!product?.product_variants || !Object.keys(selectedOptions).length) return;
-
-    const matchingVariant = product.product_variants.find(variant => 
-      Object.entries(selectedOptions).every(([type, value]) => 
-        variant.variant_type === type && variant.variant_value === value
-      )
-    );
-
-    setSelectedVariant(matchingVariant || null);
-  }, [selectedOptions, product?.product_variants]);
-
-  const handleOptionChange = (optionName, value) => {
-    setSelectedOptions(prev => ({
-      ...prev,
-      [optionName]: value
-    }));
-  };
-
-  const getCurrentPrice = () => {
-    return product.price;
-  };
-
-  const getCompareAtPrice = () => {
-    return product.match_at_price;
-  };
-
-  const getStockQuantity = () => {
-    if (selectedVariant) {
-      return selectedVariant.stock_quantity;
+    if (product) {
+      // Set default image to thumbnail
+      const thumbnail = product.product_images.find(img => img.is_thumbnail);
+      setSelectedImage(thumbnail?.url || product.product_images[0]?.url);
     }
-    return product.quantity;
+  }, [product]);
+
+  const getSizeVariants = () => {
+    return product?.product_variants.filter(v => v.variant_type === 'size') || [];
   };
 
-  const isOnSale = () => {
-    const comparePrice = getCompareAtPrice();
-    const currentPrice = getCurrentPrice();
-    return comparePrice && comparePrice > currentPrice;
+  const getColorVariants = () => {
+    return product?.product_variants.filter(v => v.variant_type === 'color') || [];
   };
 
-  const getDiscount = () => {
-    const comparePrice = getCompareAtPrice();
-    const currentPrice = getCurrentPrice();
-    if (!comparePrice || !currentPrice) return 0;
-    return Math.round(((comparePrice - currentPrice) / comparePrice) * 100);
-  };
-
-  const handleAddToCart = () => {
-    toast({
-      title: "Added to cart",
-      description: `${product?.name} has been added to your cart.`,
-    });
-  };
-
-  // Check if product is in wishlist
-  const { data: isInWishlist } = useQuery({
-    queryKey: ["wishlist", user?.id, params.slug],
-    queryFn: async () => {
-      if (!user) return false;
-      
-      const { data, error } = await supabase
-        .from("wishlists")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("product_id", product?.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return !!data;
-    },
-    enabled: !!user && !!product?.id,
-  });
-
-  // Add to wishlist mutation
-  const addToWishlist = useMutation({
-    mutationFn: async () => {
-      if (!user) {
-        navigate("/login");
-        return;
-      }
-
-      const { error } = await supabase
-        .from("wishlists")
-        .insert({
-          user_id: user.id,
-          product_id: product.id,
-        });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      toast({
-        title: "Added to wishlist",
-        description: `${product?.name} has been added to your wishlist.`,
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add item to wishlist. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Remove from wishlist mutation
-  const removeFromWishlist = useMutation({
-    mutationFn: async () => {
-      if (!user) return;
-
-      const { error } = await supabase
-        .from("wishlists")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("product_id", product.id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      toast({
-        title: "Removed from wishlist",
-        description: `${product?.name} has been removed from your wishlist.`,
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to remove item from wishlist. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleWishlistClick = () => {
+  const handleAddToCart = async () => {
     if (!user) {
+      toast({
+        title: "Please log in",
+        description: "You need to be logged in to add items to cart",
+        variant: "destructive",
+      });
       navigate("/login");
       return;
     }
 
-    if (isInWishlist) {
-      removeFromWishlist.mutate();
-    } else {
-      addToWishlist.mutate();
+    if (!selectedSize || !selectedColor) {
+      toast({
+        title: "Please select options",
+        description: "You must select both size and color before adding to cart",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const sizeVariant = getSizeVariants().find(v => v.variant_value === selectedSize);
+    const colorVariant = getColorVariants().find(v => v.variant_value === selectedColor);
+
+    if (!sizeVariant || !colorVariant) {
+      toast({
+        title: "Error",
+        description: "Selected variants are not available",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      // Check if item already exists in cart
+      const { data: existingItem } = await supabase
+        .from('carts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('product_id', product?.id)
+        .eq('size_variant_id', sizeVariant.id)
+        .eq('color_variant_id', colorVariant.id)
+        .single();
+
+      if (existingItem) {
+        // Update quantity if item exists
+        const { error: updateError } = await supabase
+          .from('carts')
+          .update({ quantity: existingItem.quantity + quantity })
+          .eq('id', existingItem.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new cart item
+        const { error: insertError } = await supabase
+          .from('carts')
+          .insert({
+            user_id: user.id,
+            product_id: product?.id,
+            size_variant_id: sizeVariant.id,
+            color_variant_id: colorVariant.id,
+            quantity
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Item added to cart",
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToCart(false);
     }
   };
 
@@ -322,132 +235,84 @@ const ProductPage = () => {
             >
               {/* Header */}
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary">
-                    {product.product_type.charAt(0).toUpperCase() + product.product_type.slice(1)}
-                  </Badge>
-                  <Badge variant="secondary">{product.collection}</Badge>
-                  {product.is_featured && (
-                    <Badge variant="default" className="bg-primary">New Arrival</Badge>
-                  )}
-                </div>
                 <h1 className="font-jakarta text-3xl font-bold">{product.name}</h1>
               </div>
 
               {/* Variant Selection */}
-              {product.product_variants && product.product_variants.length > 0 && (
-                <div className="space-y-4">
-                  <Separator className="my-4" />
-                  {Object.entries(product.variantOptions || {}).map(([type, values]) => (
-                    <div key={type}>
-                      <h3 className="font-jakarta text-sm font-semibold mb-2">
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {values.map((value) => (
-                          <Button
-                            key={value}
-                            variant={selectedOptions[type] === value ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleOptionChange(type, value)}
-                          >
-                            {value}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Description */}
-              <div className="prose prose-sm max-w-none">
-                <Separator className="my-4" />
-                <h3 className="font-jakarta text-lg font-semibold mb-2">Description</h3>
-                <p className="text-gray-600 whitespace-pre-line">
-                  {product.product_description || "No description available."}
-                </p>
-              </div>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-2">
-                {isOnSale() ? (
-                  <>
-                    <span className="text-3xl font-bold text-primary">
-                      ${getCurrentPrice().toFixed(2)}
-                    </span>
-                    <span className="text-xl text-gray-500 line-through">
-                      ${getCompareAtPrice().toFixed(2)}
-                    </span>
-                    <Badge variant="destructive" className="ml-2">
-                      {getDiscount()}% OFF
-                    </Badge>
-                  </>
-                ) : (
-                  <span className="text-3xl font-bold text-primary">
-                    ${getCurrentPrice().toFixed(2)}
-                  </span>
-                )}
-              </div>
-
-              {/* Stock Status */}
-              <div className="text-sm">
-                {getStockQuantity() > 0 ? (
-                  <span className="text-green-600">In Stock ({getStockQuantity()} available)</span>
-                ) : (
-                  <span className="text-red-600">Out of Stock</span>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="pt-6 space-y-4">
-                <Button 
-                  onClick={handleAddToCart}
-                  className="w-full h-12 text-lg"
-                  size="lg"
-                  disabled={
-                    (selectedVariant && selectedVariant.stock_quantity === 0) ||
-                    (!selectedVariant && product.quantity === 0) ||
-                    (product.product_variants && !selectedVariant)
-                  }
-                >
-                  {product.product_variants && !selectedVariant 
-                    ? "Select Options" 
-                    : "Add to Cart"}
-                </Button>
-                <Button
-                  variant="outline"
-                  className={`flex items-center gap-2 ${
-                    isInWishlist ? "bg-primary/10 text-primary" : ""
-                  }`}
-                  onClick={handleWishlistClick}
-                >
-                  <Heart className={`h-5 w-5 ${isInWishlist ? "fill-current" : ""}`} />
-                  {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
-                </Button>
-              </div>
-
-              {/* Additional Info */}
-              <div className="pt-6">
-                <Separator className="mb-4" />
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">SKU:</span>
-                    <span className="ml-2 font-medium">{product.id.slice(0, 8).toUpperCase()}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Category:</span>
-                    <span className="ml-2 font-medium">{product.collection}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Status:</span>
-                    <span className="ml-2 font-medium">In Stock</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Type:</span>
-                    <span className="ml-2 font-medium capitalize">{product.product_type}</span>
+              <div className="space-y-4">
+                {/* Size Selection */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Size <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {getSizeVariants().map((variant) => (
+                      <Button
+                        key={variant.id}
+                        variant={selectedSize === variant.variant_value ? "default" : "outline"}
+                        onClick={() => setSelectedSize(variant.variant_value)}
+                        disabled={variant.stock_quantity === 0}
+                      >
+                        {variant.variant_value}
+                      </Button>
+                    ))}
                   </div>
                 </div>
+
+                {/* Color Selection */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Color <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {getColorVariants().map((variant) => (
+                      <Button
+                        key={variant.id}
+                        variant={selectedColor === variant.variant_value ? "default" : "outline"}
+                        onClick={() => setSelectedColor(variant.variant_value)}
+                        disabled={variant.stock_quantity === 0}
+                      >
+                        {variant.variant_value}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quantity Selection */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Quantity</label>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    >
+                      -
+                    </Button>
+                    <span className="w-12 text-center">{quantity}</span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setQuantity(quantity + 1)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Add to Cart Button */}
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={handleAddToCart}
+                disabled={addingToCart || !selectedSize || !selectedColor}
+              >
+                {addingToCart ? "Adding to Cart..." : "Add to Cart"}
+              </Button>
+
+              {/* Product Description */}
+              <div className="prose max-w-none">
+                <h3 className="text-lg font-medium">Description</h3>
+                <p>{product.description}</p>
               </div>
             </motion.div>
           </div>
