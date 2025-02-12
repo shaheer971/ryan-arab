@@ -31,6 +31,31 @@ export interface ProductFormData {
   colorVariants: VariantOption[];
 }
 
+export interface ProductVariant {
+  id: string;
+  variant_type: string;
+  variant_value: string;
+  stock_quantity: number;
+  variant_sku: string;
+}
+
+export interface ProductResponse {
+  id: string;
+  name: string;
+  name_arabic: string;
+  price: number;
+  match_at_price: number | null;
+  product_type: string;
+  quantity: number;
+  sku: string;
+  collection: string;
+  product_description: string;
+  product_description_arabic: string;
+  status: string;
+  product_images: ProductImage[];
+  product_variants: ProductVariant[];
+}
+
 export interface EditProductFormProps {
   onSuccess?: () => void;
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -60,7 +60,8 @@ interface Product {
   created_at: string;
   product_variants: ProductVariant[];
   product_images: ProductImage[];
-  product_description?: string;
+  product_description: string;
+  product_description_arabic: string;
 }
 
 const Products = () => {
@@ -72,16 +73,24 @@ const Products = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from("products")
+        .from('products')
         .select(`
-          *,
+          id,
+          name,
+          name_arabic,
+          slug,
+          price,
+          match_at_price,
+          product_type,
+          quantity,
+          inventory_count,
+          sku,
+          collection,
+          status,
+          created_at,
           product_variants (
             id,
             variant_type,
@@ -93,24 +102,60 @@ const Products = () => {
             id,
             url,
             is_thumbnail
-          )
+          ),
+          product_description,
+          product_description_arabic
         `)
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setProducts(data || []);
+      if (data) {
+        // Type guard to ensure data matches our expected structure
+        const typedProducts: Product[] = data.map(item => {
+          if (!('id' in item) || !('name' in item)) {
+            console.error('Invalid product data structure:', item);
+            return null;
+          }
+
+          return {
+            id: item.id,
+            name: item.name || '',
+            name_arabic: item.name_arabic || '',
+            slug: item.slug || '',
+            price: typeof item.price === 'number' ? item.price : 0,
+            match_at_price: item.match_at_price ? Number(item.match_at_price) : null,
+            product_type: item.product_type || '',
+            quantity: typeof item.quantity === 'number' ? item.quantity : 0,
+            inventory_count: typeof item.inventory_count === 'number' ? item.inventory_count : 0,
+            sku: item.sku || '',
+            collection: item.collection || '',
+            status: item.status || 'draft',
+            created_at: item.created_at || '',
+            product_variants: Array.isArray(item.product_variants) ? item.product_variants : [],
+            product_images: Array.isArray(item.product_images) ? item.product_images : [],
+            product_description: item.product_description || '',
+            product_description_arabic: item.product_description_arabic || ''
+          };
+        }).filter((product): product is Product => product !== null);
+
+        setProducts(typedProducts);
+      }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error('Error fetching products:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch products. Please try again.",
+        description: "Failed to fetch products",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -153,11 +198,11 @@ const Products = () => {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'published':
-        return 'success';
+        return 'default';
       case 'draft':
         return 'secondary';
       case 'archived':
-        return 'destructive';
+        return 'outline';
       default:
         return 'default';
     }
@@ -234,7 +279,15 @@ const Products = () => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getStatusBadgeVariant(product.status)}>
+                  <Badge
+                    variant={
+                      product.status === "published"
+                        ? "default"
+                        : product.status === "draft"
+                        ? "secondary"
+                        : "outline"
+                    }
+                  >
                     {product.status}
                   </Badge>
                 </TableCell>

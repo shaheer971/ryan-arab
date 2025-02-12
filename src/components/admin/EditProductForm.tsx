@@ -6,29 +6,74 @@ import { Button } from "@/components/ui/button";
 import { ProductFormFields } from "./product/ProductFormFields";
 import { ProductImagesSection } from "./product/ProductImagesSection";
 import { validateProductForm, uploadProductImages } from "./utils/product-form-utils";
-import { ProductFormData, EditProductFormProps, ProductImage, VariantOption } from "./types/product-form";
+import { ProductResponse, EditProductFormProps, ProductImage, VariantOption } from "./types/product-form";
+import { SupabaseClient } from "@supabase/supabase-js";
+import type { Database as GeneratedDatabase } from "@/integrations/supabase/types";
 
-interface ProductResponse {
-  id: string;
+type ExtendedDatabase = GeneratedDatabase & {
+  public: {
+    Tables: {
+      products: {
+        Row: {
+          id: string;
+          name: string;
+          name_arabic: string;
+          price: number;
+          match_at_price: number | null;
+          product_type: string;
+          quantity: number;
+          sku: string;
+          collection: string;
+          product_description: string;
+          product_description_arabic: string;
+          status: string;
+          product_images: {
+            id: string;
+            url: string;
+            filename: string;
+            original_filename: string;
+            size_bytes: number;
+            mime_type: string;
+            position: number;
+            is_thumbnail: boolean;
+            product_id: string;
+          }[];
+          product_variants: {
+            id: string;
+            variant_type: string;
+            variant_value: string;
+            stock_quantity: number;
+            variant_sku: string;
+          }[];
+        };
+      };
+    } & GeneratedDatabase["public"]["Tables"];
+  };
+};
+
+interface ProductFormData {
   name: string;
   name_arabic: string;
-  price: number;
-  match_at_price: number | null;
+  price: string;
+  match_at_price: string;
   product_type: string;
-  quantity: number;
+  quantity: string;
   sku: string;
   collection: string;
   product_description: string;
   product_description_arabic: string;
   status: string;
-  product_images: ProductImage[];
-  product_variants: {
-    id: string;
-    variant_type: string;
-    variant_value: string;
-    stock_quantity: number;
-    variant_sku: string;
-  }[];
+  title: string;
+  sizeVariants: VariantOption[];
+  colorVariants: VariantOption[];
+}
+
+interface ProductVariant {
+  id: string;
+  variant_type: string;
+  variant_value: string;
+  stock_quantity: number;
+  variant_sku: string;
 }
 
 const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
@@ -58,7 +103,8 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
 
   const fetchProductData = useCallback(async () => {
     try {
-      const { data: product, error } = await supabase
+      const supabaseTyped = supabase as unknown as SupabaseClient<ExtendedDatabase>;
+      const { data, error } = await supabaseTyped
         .from('products')
         .select(`
           id,
@@ -97,43 +143,88 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
 
       if (error) throw error;
 
-      if (product) {
-        const typedProduct = product as ProductResponse;
+      if (data) {
+        // Type guard to ensure product_variants has the correct shape
+        const variants = Array.isArray(data.product_variants) ? data.product_variants.map(v => {
+          // First cast to unknown to avoid type errors
+          const variant = v as unknown;
+          
+          // Then check if it's a valid object with all required properties
+          if (
+            typeof variant !== 'object' || variant === null ||
+            !('id' in variant) || typeof variant.id !== 'string' ||
+            !('variant_type' in variant) || typeof variant.variant_type !== 'string' ||
+            !('variant_value' in variant) || typeof variant.variant_value !== 'string' ||
+            !('stock_quantity' in variant) || typeof variant.stock_quantity !== 'number' ||
+            !('variant_sku' in variant) || typeof variant.variant_sku !== 'string'
+          ) {
+            console.error('Invalid variant data:', variant);
+            return null;
+          }
+
+          // Now we can safely cast and return the variant
+          return {
+            id: variant.id,
+            variant_type: variant.variant_type,
+            variant_value: variant.variant_value,
+            stock_quantity: variant.stock_quantity,
+            variant_sku: variant.variant_sku
+          } as ProductVariant;
+        }).filter((v): v is ProductVariant => v !== null) : [];
+
+        const typedProduct: ProductResponse = {
+          id: data.id,
+          name: data.name,
+          name_arabic: data.name_arabic,
+          price: data.price,
+          match_at_price: data.match_at_price,
+          product_type: data.product_type,
+          quantity: data.quantity,
+          sku: data.sku,
+          collection: data.collection,
+          product_description: data.product_description,
+          product_description_arabic: data.product_description_arabic,
+          status: data.status,
+          product_images: data.product_images,
+          product_variants: variants
+        };
+
         setFormData({
-          name: typedProduct.name || "",
-          name_arabic: typedProduct.name_arabic || "",
-          price: typedProduct.price?.toString() || "",
+          name: typedProduct.name,
+          name_arabic: typedProduct.name_arabic,
+          price: typedProduct.price.toString(),
           match_at_price: typedProduct.match_at_price?.toString() || "",
-          product_type: typedProduct.product_type as "men" | "women",
-          quantity: typedProduct.quantity?.toString() || "",
-          sku: typedProduct.sku || "",
-          collection: typedProduct.collection as "casual" | "sneakers" | "dress shoes" | "sandals and slippers",
-          product_description: typedProduct.product_description || "",
-          product_description_arabic: typedProduct.product_description_arabic || "",
-          status: typedProduct.status as "published" | "draft",
-          title: typedProduct.name || "",
-          sizeVariants: typedProduct.product_variants
-            .filter((v: any) => v.variant_type === 'size')
-            .map((v: any) => ({
+          product_type: typedProduct.product_type,
+          quantity: typedProduct.quantity.toString(),
+          sku: typedProduct.sku,
+          collection: typedProduct.collection,
+          product_description: typedProduct.product_description,
+          product_description_arabic: typedProduct.product_description_arabic,
+          status: typedProduct.status,
+          title: typedProduct.name,
+          sizeVariants: variants
+            .filter(v => v.variant_type === 'size')
+            .map(v => ({
               value: v.variant_value,
               stock_quantity: v.stock_quantity,
-              sku: v.variant_sku,
+              sku: v.variant_sku
             })),
-          colorVariants: typedProduct.product_variants
-            .filter((v: any) => v.variant_type === 'color')
-            .map((v: any) => ({
+          colorVariants: variants
+            .filter(v => v.variant_type === 'color')
+            .map(v => ({
               value: v.variant_value,
               stock_quantity: v.stock_quantity,
-              sku: v.variant_sku,
-            })),
+              sku: v.variant_sku
+            }))
         });
-        setExistingImages(typedProduct.product_images || []);
+
+        setExistingImages(typedProduct.product_images);
       }
     } catch (error) {
-      console.error('Error fetching product:', error);
+      console.error("Error fetching product:", error);
       toast({
-        title: "Error fetching product",
-        description: "Could not load product data. Please try again.",
+        title: "Error",
+        description: "Failed to fetch product details",
         variant: "destructive",
       });
     }
@@ -145,7 +236,9 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
     }
   }, [productId, fetchProductData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -251,33 +344,47 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
 
       // Insert new variants
       if (formData.sizeVariants.length > 0) {
+        const sizeVariants = formData.sizeVariants.map((variant) => ({
+          product_id: productId,
+          variant_type: 'size',
+          variant_value: variant.value,
+          stock_quantity: Number(variant.stock_quantity),
+          variant_sku: variant.sku || `${formData.sku}-${variant.value.toLowerCase()}`,
+          name: formData.name,
+          option_values: [variant.value],
+          price: Number(formData.price)
+        }));
+
         const { error: sizeError } = await supabase
           .from("product_variants")
-          .insert(
-            formData.sizeVariants.map((variant) => ({
-              product_id: productId,
-              variant_type: 'size',
-              variant_value: variant.value,
-              stock_quantity: Number(variant.stock_quantity),
-              variant_sku: variant.sku || `${formData.sku}-${variant.value}`,
-            }))
-          );
-        if (sizeError) throw sizeError;
+          .upsert(sizeVariants);
+
+        if (sizeError) {
+          console.error('Size variant error:', sizeError);
+          throw new Error(sizeError.message);
+        }
       }
 
       if (formData.colorVariants.length > 0) {
+        const colorVariants = formData.colorVariants.map((variant) => ({
+          product_id: productId,
+          variant_type: 'color',
+          variant_value: variant.value,
+          stock_quantity: Number(variant.stock_quantity),
+          variant_sku: variant.sku || `${formData.sku}-${variant.value.toLowerCase()}`,
+          name: formData.name,
+          option_values: [variant.value],
+          price: Number(formData.price)
+        }));
+
         const { error: colorError } = await supabase
           .from("product_variants")
-          .insert(
-            formData.colorVariants.map((variant) => ({
-              product_id: productId,
-              variant_type: 'color',
-              variant_value: variant.value,
-              stock_quantity: Number(variant.stock_quantity),
-              variant_sku: variant.sku || `${formData.sku}-${variant.value.toLowerCase()}`,
-            }))
-          );
-        if (colorError) throw colorError;
+          .upsert(colorVariants);
+
+        if (colorError) {
+          console.error('Color variant error:', colorError);
+          throw new Error(colorError.message);
+        }
       }
 
       if (selectedImages.length > 0) {
