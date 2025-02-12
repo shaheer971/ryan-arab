@@ -1,205 +1,360 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import ProductCard from "@/components/ProductCard";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+interface ProductImage {
+  id: string;
+  url: string;
+  is_thumbnail: boolean;
+  position: number;
+}
+
+interface ProductVariant {
+  id: string;
+  variant_type: string;
+  variant_value: string;
+  stock_quantity: number;
+  variant_sku: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  name_arabic: string;
+  price: number;
+  match_at_price: number | null;
+  product_type: string;
+  collection: string;
+  product_description: string;
+  product_description_arabic: string;
+  status: string;
+  slug: string;
+  product_images: ProductImage[];
+  product_variants: ProductVariant[];
+}
+
+interface FeaturedProduct {
+  id: string;
+  product_id: string;
+  section: 'featured' | 'sale';
+  position: number;
+  product: Product;
+}
 
 const WebsiteEditor = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleSave = () => {
-    toast({
-      title: "Changes saved",
-      description: "Your website changes have been saved successfully.",
-    });
+  // Fetch all products
+  const { data: products, isLoading: isLoadingProducts } = useQuery({
+    queryKey: ['all-products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          id,
+          name,
+          name_arabic,
+          price,
+          match_at_price,
+          product_type,
+          collection,
+          product_description,
+          product_description_arabic,
+          status,
+          slug,
+          product_images (
+            id,
+            url,
+            is_thumbnail,
+            position
+          ),
+          product_variants (
+            id,
+            variant_type,
+            variant_value,
+            stock_quantity,
+            variant_sku
+          )
+        `)
+        .eq('status', 'published')
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+      return data as Product[];
+    }
+  });
+
+  // Fetch featured and sale products
+  const { data: featuredProducts, isLoading: isLoadingFeatured } = useQuery({
+    queryKey: ['featured-products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('featured_products')
+        .select(`
+          id,
+          product_id,
+          section,
+          position,
+          product:products (
+            id,
+            name,
+            name_arabic,
+            price,
+            match_at_price,
+            product_type,
+            collection,
+            product_description,
+            product_description_arabic,
+            status,
+            slug,
+            product_images (
+              id,
+              url,
+              is_thumbnail,
+              position
+            ),
+            product_variants (
+              id,
+              variant_type,
+              variant_value,
+              stock_quantity,
+              variant_sku
+            )
+          )
+        `)
+        .order('position');
+
+      if (error) {
+        console.error('Error fetching featured products:', error);
+        throw error;
+      }
+      return data as FeaturedProduct[];
+    }
+  });
+
+  // Add product to featured/sale section
+  const addProductMutation = useMutation({
+    mutationFn: async ({ productId, section }: { productId: string; section: 'featured' | 'sale' }) => {
+      const position = featuredProducts?.filter(fp => fp.section === section).length || 0;
+      const { error } = await supabase
+        .from('featured_products')
+        .insert({
+          product_id: productId,
+          section,
+          position
+        });
+
+      if (error) {
+        console.error('Error adding product:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['featured-products']);
+      toast({
+        title: "Success",
+        description: "Product added successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add product. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Remove product from featured/sale section
+  const removeProductMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('featured_products')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error removing product:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['featured-products']);
+      toast({
+        title: "Success",
+        description: "Product removed successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to remove product. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const getFeaturedProducts = () => {
+    return featuredProducts?.filter(fp => fp.section === 'featured') || [];
   };
+
+  const getSaleProducts = () => {
+    return featuredProducts?.filter(fp => fp.section === 'sale') || [];
+  };
+
+  const getAvailableProducts = (section: 'featured' | 'sale') => {
+    const sectionProducts = section === 'featured' ? getFeaturedProducts() : getSaleProducts();
+    const sectionProductIds = new Set(sectionProducts.map(fp => fp.product_id));
+    return products?.filter(p => !sectionProductIds.has(p.id)) || [];
+  };
+
+  if (isLoadingProducts || isLoadingFeatured) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-satoshi">Website Editor</h1>
-        <Button onClick={handleSave}>Save Changes</Button>
+        <h1 className="text-3xl font-bold font-satoshi">Homepage Editor</h1>
       </div>
 
-      <Tabs defaultValue="home" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="home">Home Page</TabsTrigger>
-          <TabsTrigger value="about">About Page</TabsTrigger>
-          <TabsTrigger value="contact">Contact Page</TabsTrigger>
+      <Tabs defaultValue="featured" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="featured">Featured Products</TabsTrigger>
+          <TabsTrigger value="sale">Sale Products</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="home" className="space-y-4">
+        <TabsContent value="featured" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Hero Section</CardTitle>
+              <CardTitle>Featured Products</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="homeTitle">Title</Label>
-                <Input
-                  id="homeTitle"
-                  defaultValue="Step into Luxury"
-                  placeholder="Enter hero title"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="homeTag">Tag Line</Label>
-                <Input
-                  id="homeTag"
-                  defaultValue="Discover our curated collection of premium footwear"
-                  placeholder="Enter tag line"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="heroImage">Hero Background Image</Label>
-                <div className="flex gap-4 items-start">
-                  <img
-                    src="https://images.unsplash.com/photo-1549298916-b41d501d3772"
-                    alt="Current hero"
-                    className="w-40 h-24 object-cover rounded-md"
-                  />
-                  <Input id="heroImage" type="file" accept="image/*" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Featured Categories</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {["Men's Collection", "Women's Collection", "Kids' Collection"].map(
-                (category, index) => (
-                  <div key={index} className="space-y-4 pb-4 border-b last:border-0">
-                    <div className="space-y-2">
-                      <Label htmlFor={`category${index}Title`}>
-                        Category {index + 1} Title
-                      </Label>
-                      <Input
-                        id={`category${index}Title`}
-                        defaultValue={category}
-                        placeholder="Enter category title"
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {getFeaturedProducts().map((fp, index) => (
+                    <div key={fp.id} className="relative group">
+                      <ProductCard
+                        id={fp.product.id}
+                        name={fp.product.name}
+                        price={fp.product.price}
+                        match_at_price={fp.product.match_at_price}
+                        product_images={fp.product.product_images}
+                        slug={fp.product.slug}
+                        category={fp.product.product_type}
                       />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeProductMutation.mutate(fp.id)}
+                      >
+                        Remove
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`category${index}Image`}>
-                        Category Image
-                      </Label>
-                      <div className="flex gap-4 items-start">
-                        <img
-                          src={`https://images.unsplash.com/photo-${
-                            index === 0
-                              ? "1491553895911-0055eca6402d"
-                              : index === 1
-                              ? "1543163521-1bf539c55dd2"
-                              : "1514989940723-e8e51635b782"
-                          }`}
-                          alt={category}
-                          className="w-40 h-24 object-cover rounded-md"
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold mb-2">Add Products</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {getAvailableProducts('featured').map((product) => (
+                      <div key={product.id} className="relative group">
+                        <ProductCard
+                          id={product.id}
+                          name={product.name}
+                          price={product.price}
+                          match_at_price={product.match_at_price}
+                          product_images={product.product_images}
+                          slug={product.slug}
+                          category={product.product_type}
                         />
-                        <Input
-                          id={`category${index}Image`}
-                          type="file"
-                          accept="image/*"
-                        />
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => addProductMutation.mutate({ productId: product.id, section: 'featured' })}
+                        >
+                          Add
+                        </Button>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                )
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="about" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>About Page Content</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="aboutTitle">Page Title</Label>
-                <Input
-                  id="aboutTitle"
-                  defaultValue="Our Story"
-                  placeholder="Enter page title"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="aboutHeroImage">Hero Image</Label>
-                <div className="flex gap-4 items-start">
-                  <img
-                    src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04"
-                    alt="Current about hero"
-                    className="w-40 h-24 object-cover rounded-md"
-                  />
-                  <Input id="aboutHeroImage" type="file" accept="image/*" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="aboutContent">Main Content</Label>
-                <Textarea
-                  id="aboutContent"
-                  defaultValue="Founded with a passion for exceptional footwear, our journey began in a small workshop where every stitch was crafted with precision and care. Today, we continue to honor that tradition while embracing innovation and contemporary design."
-                  placeholder="Enter main content"
-                  className="min-h-[200px]"
-                />
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="contact" className="space-y-4">
+        <TabsContent value="sale" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle>Sale Products</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="contactTitle">Page Title</Label>
-                <Input
-                  id="contactTitle"
-                  defaultValue="Get in Touch"
-                  placeholder="Enter page title"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  defaultValue="123 Luxury Lane, Fashion District"
-                  placeholder="Enter address"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  defaultValue="contact@luxuryshoes.com"
-                  placeholder="Enter email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  defaultValue="+1 (555) 123-4567"
-                  placeholder="Enter phone"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessHours">Business Hours</Label>
-                <Textarea
-                  id="businessHours"
-                  defaultValue="Monday - Friday: 9:00 AM - 6:00 PM
-Saturday: 10:00 AM - 4:00 PM
-Sunday: Closed"
-                  placeholder="Enter business hours"
-                  className="min-h-[100px]"
-                />
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {getSaleProducts().map((fp, index) => (
+                    <div key={fp.id} className="relative group">
+                      <ProductCard
+                        id={fp.product.id}
+                        name={fp.product.name}
+                        price={fp.product.price}
+                        match_at_price={fp.product.match_at_price}
+                        product_images={fp.product.product_images}
+                        slug={fp.product.slug}
+                        category={fp.product.product_type}
+                      />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeProductMutation.mutate(fp.id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold mb-2">Add Products</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {getAvailableProducts('sale').map((product) => (
+                      <div key={product.id} className="relative group">
+                        <ProductCard
+                          id={product.id}
+                          name={product.name}
+                          price={product.price}
+                          match_at_price={product.match_at_price}
+                          product_images={product.product_images}
+                          slug={product.slug}
+                          category={product.product_type}
+                        />
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => addProductMutation.mutate({ productId: product.id, section: 'sale' })}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

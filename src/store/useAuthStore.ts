@@ -23,7 +23,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (!error && profile?.role === 'admin') {

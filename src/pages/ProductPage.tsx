@@ -14,10 +14,11 @@ import ProductImageGallery from "@/components/ProductImageGallery";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import { RecommendedProducts } from "@/components/RecommendedProducts";
 
 interface ProductVariant {
   id: string;
-  variant_type: 'size' | 'color';
+  variant_type: string;
   variant_value: string;
   stock_quantity: number;
   variant_sku: string;
@@ -29,7 +30,10 @@ interface Product {
   name_arabic: string;
   price: number;
   match_at_price: number | null;
-  description: string;
+  product_description: string;
+  product_description_arabic: string;
+  product_type: string;
+  collection: string;
   product_images: { url: string; is_thumbnail: boolean }[];
   product_variants: ProductVariant[];
 }
@@ -46,12 +50,22 @@ const ProductPage = () => {
         const { data, error } = await supabase
           .from('products')
           .select(`
-            *,
-            product_images (
+            id,
+            name,
+            name_arabic,
+            price,
+            match_at_price,
+            product_type,
+            collection,
+            product_description,
+            product_description_arabic,
+            slug,
+            product_images!inner (
+              id,
               url,
               is_thumbnail
             ),
-            product_variants (
+            product_variants!inner (
               id,
               variant_type,
               variant_value,
@@ -71,10 +85,77 @@ const ProductPage = () => {
           description: "Failed to load product details",
           variant: "destructive",
         });
+        return null;
       }
     },
     retry: false
   });
+
+  // Fetch recommended products with proper filtering
+  const { data: recommendedProducts } = useQuery({
+    queryKey: ['recommendedProducts', product?.id, product?.product_type, product?.collection],
+    queryFn: async () => {
+      if (!product) return [];
+      
+      try {
+        // First get products from same type and collection
+        const { data: sameTypeAndCollection } = await supabase
+          .from('products')
+          .select(`
+            id,
+            name,
+            price,
+            slug,
+            product_images!inner (
+              id,
+              url,
+              is_thumbnail
+            )
+          `)
+          .eq('product_type', product.product_type)
+          .eq('collection', product.collection)
+          .neq('id', product.id)
+          .limit(8);
+
+        // If we don't have enough products, get more from same type
+        if (!sameTypeAndCollection || sameTypeAndCollection.length < 8) {
+          const { data: sameType } = await supabase
+            .from('products')
+            .select(`
+              id,
+              name,
+              price,
+              slug,
+              product_images!inner (
+                id,
+                url,
+                is_thumbnail
+              )
+            `)
+            .eq('product_type', product.product_type)
+            .neq('id', product.id)
+            .neq('collection', product.collection)
+            .limit(8 - (sameTypeAndCollection?.length || 0));
+
+          return [...(sameTypeAndCollection || []), ...(sameType || [])];
+        }
+
+        return sameTypeAndCollection;
+      } catch (error) {
+        console.error('Error fetching recommended products:', error);
+        return [];
+      }
+    },
+    enabled: !!product,
+  });
+
+  const getSizeVariants = () => {
+    return product?.product_variants?.filter(v => v.variant_type.toLowerCase() === 'size') || [];
+  };
+
+  const getColorVariants = () => {
+    return product?.product_variants?.filter(v => v.variant_type.toLowerCase() === 'color') || [];
+  };
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -89,14 +170,6 @@ const ProductPage = () => {
       setSelectedImage(thumbnail?.url || product.product_images[0]?.url);
     }
   }, [product]);
-
-  const getSizeVariants = () => {
-    return product?.product_variants.filter(v => v.variant_type === 'size') || [];
-  };
-
-  const getColorVariants = () => {
-    return product?.product_variants.filter(v => v.variant_type === 'color') || [];
-  };
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -238,6 +311,37 @@ const ProductPage = () => {
                 <h1 className="font-jakarta text-3xl font-bold">{product.name}</h1>
               </div>
 
+              {/* Price */}
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold">
+                  {formatCurrency(product.price)}
+                </span>
+                {product.match_at_price && (
+                  <span className="text-lg text-gray-500 line-through">
+                    {formatCurrency(product.match_at_price)}
+                  </span>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold">Description</h2>
+                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {product.product_description}
+                </p>
+              </div>
+
+              {/* Return Policy Link */}
+              <div>
+                <Button
+                  variant="link"
+                  className="p-0 h-auto font-semibold text-primary hover:underline"
+                  onClick={() => navigate('/return-policy')}
+                >
+                  View Return Policy
+                </Button>
+              </div>
+
               {/* Variant Selection */}
               <div className="space-y-4">
                 {/* Size Selection */}
@@ -252,6 +356,7 @@ const ProductPage = () => {
                         variant={selectedSize === variant.variant_value ? "default" : "outline"}
                         onClick={() => setSelectedSize(variant.variant_value)}
                         disabled={variant.stock_quantity === 0}
+                        className="min-w-[60px]"
                       >
                         {variant.variant_value}
                       </Button>
@@ -271,6 +376,7 @@ const ProductPage = () => {
                         variant={selectedColor === variant.variant_value ? "default" : "outline"}
                         onClick={() => setSelectedColor(variant.variant_value)}
                         disabled={variant.stock_quantity === 0}
+                        className="min-w-[60px]"
                       >
                         {variant.variant_value}
                       </Button>
@@ -308,14 +414,18 @@ const ProductPage = () => {
               >
                 {addingToCart ? "Adding to Cart..." : "Add to Cart"}
               </Button>
-
-              {/* Product Description */}
-              <div className="prose max-w-none">
-                <h3 className="text-lg font-medium">Description</h3>
-                <p>{product.description}</p>
-              </div>
             </motion.div>
           </div>
+        </div>
+
+        {/* Recommended Products Section */}
+        <div className="mt-12 bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
+          {recommendedProducts && recommendedProducts.length > 0 ? (
+            <RecommendedProducts products={recommendedProducts} />
+          ) : (
+            <p className="text-gray-500 text-center py-4">No recommended products available</p>
+          )}
         </div>
       </main>
     </div>

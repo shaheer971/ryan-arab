@@ -350,9 +350,6 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
           variant_value: variant.value,
           stock_quantity: Number(variant.stock_quantity),
           variant_sku: variant.sku || `${formData.sku}-${variant.value.toLowerCase()}`,
-          name: formData.name,
-          option_values: [variant.value],
-          price: Number(formData.price)
         }));
 
         const { error: sizeError } = await supabase
@@ -372,9 +369,6 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
           variant_value: variant.value,
           stock_quantity: Number(variant.stock_quantity),
           variant_sku: variant.sku || `${formData.sku}-${variant.value.toLowerCase()}`,
-          name: formData.name,
-          option_values: [variant.value],
-          price: Number(formData.price)
         }));
 
         const { error: colorError } = await supabase

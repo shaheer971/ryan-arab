@@ -11,8 +11,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 // Area codes for common countries
 const areaCodes = [
-  { code: "+1", country: "USA/Canada" },
-  { code: "+44", country: "UK" },
   { code: "+971", country: "UAE" },
   { code: "+966", country: "Saudi Arabia" },
   { code: "+965", country: "Kuwait" },

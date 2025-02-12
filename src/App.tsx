@@ -41,6 +41,7 @@ const WebsiteEditor = lazyLoad(() => import("./pages/admin/WebsiteEditor"));
 const Settings = lazyLoad(() => import("./pages/admin/Settings"));
 const Mens = lazyLoad(() => import("./pages/mens"));
 const Womens = lazyLoad(() => import("./pages/womens"));
+const ReturnPolicy = lazyLoad(() => import("./pages/ReturnPolicy"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,6 +133,7 @@ const App = () => {
                   <Route path="/product/:slug" element={<ProductPage />} />
                   <Route path="/mens" element={<Mens />} />
                   <Route path="/womens" element={<Womens />} />
+                  <Route path="/return-policy" element={<ReturnPolicy />} />
                   <Route path="/admin" element={<AdminLayout mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />}>
                     <Route index element={<Dashboard />} />
                     <Route path="products" element={<Products />} />

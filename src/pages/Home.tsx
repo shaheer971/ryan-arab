@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ProductCard from "@/components/ProductCard";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const Home = () => {
   const isMobile = useIsMobile();
@@ -14,60 +17,64 @@ const Home = () => {
     transition: { duration: 0.5 }
   };
 
-  const featuredProducts = [
-    {
-      id: "1",
-      name: "Classic Leather Oxford",
-      price: 199.99,
-      image: "https://images.unsplash.com/photo-1549298916-b41d501d3772",
-      category: "Men's Shoes",
-      isNew: true,
-      tags: ["Leather", "Formal"],
-      slug: "classic-leather-oxford"
-    },
-    {
-      id: "2",
-      name: "Elegant Heels",
-      price: 159.99,
-      image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2",
-      category: "Women's Shoes",
-      isSale: true,
-      discount: 20,
-      tags: ["Evening", "Heels"],
-      slug: "elegant-heels"
-    },
-    {
-      id: "3",
-      name: "Kids Sport Sneakers",
-      price: 79.99,
-      image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2",
-      category: "Kids' Shoes",
-      tags: ["Sport", "Casual"],
-      slug: "kids-sport-sneakers"
-    },
-    {
-      id: "4",
-      name: "Casual Loafers",
-      price: 129.99,
-      image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509",
-      category: "Men's Shoes",
-      tags: ["Casual", "Comfort"],
-      slug: "casual-loafers"
-    }
-  ];
+  // Fetch featured and sale products
+  const { data: featuredProducts, isLoading: isLoadingFeatured } = useQuery({
+    queryKey: ['featured-products-home'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('featured_products')
+        .select(`
+          product:products (
+            id,
+            name,
+            price,
+            match_at_price,
+            slug,
+            product_type,
+            product_images (
+              id,
+              url,
+              is_thumbnail,
+              position
+            )
+          )
+        `)
+        .eq('section', 'featured')
+        .order('position');
 
-  const scrollAnimation = {
-    x: [0, -1400],
-    transition: {
-      x: {
-        repeat: Infinity,
-        repeatType: "loop",
-        duration: 30,
-        ease: "linear",
-        repeatDelay: 0
-      }
+      if (error) throw error;
+      return data?.map(fp => fp.product) || [];
     }
-  };
+  });
+
+  const { data: saleProducts, isLoading: isLoadingSale } = useQuery({
+    queryKey: ['sale-products-home'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('featured_products')
+        .select(`
+          product:products (
+            id,
+            name,
+            price,
+            match_at_price,
+            slug,
+            product_type,
+            product_images (
+              id,
+              url,
+              is_thumbnail,
+              position
+            )
+          )
+        `)
+        .eq('section', 'sale')
+        .order('position');
+
+      if (error) throw error;
+      return data?.map(fp => fp.product) || [];
+    }
+  });
 
   const categories = [
     {
@@ -98,6 +105,7 @@ const Home = () => {
 
   return (
     <div className="animate-fadeIn">
+      {/* Hero Section */}
       <section className="h-screen relative flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1549298916-b41d501d3772')] bg-cover bg-center">
         <div className="absolute inset-0 bg-black/40" />
         <motion.div 
@@ -122,6 +130,7 @@ const Home = () => {
         </motion.div>
       </section>
 
+      {/* Categories Section */}
       <section className="py-24 px-4 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto">
           <motion.h2 
@@ -176,199 +185,106 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-24 px-0 gradient-premium overflow-hidden">
+      {/* Sale Products Section */}
+      <section className="py-24 px-4 gradient-premium">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between items-center mb-12">
             <motion.div {...fadeInUp} className="max-w-2xl text-center md:text-left">
               <span className="text-primary font-medium mb-2 block">Limited Time Offer</span>
               <h2 className="font-jakarta text-3xl md:text-4xl font-bold mb-4">
-                New Year Sale 2025
+                Special Sale
               </h2>
               <p className="text-gray-600 mb-4 md:mb-0">
-                Start the year in style with up to 50% off on selected items. Limited stock available.
+                Discover our exclusive collection of sale items at unbeatable prices.
               </p>
-              <div className="md:hidden mt-4">
-                <Button
-                  asChild
-                  variant="default"
-                  className="bg-primary text-white hover:bg-primary/90"
-                >
-                  <Link to="/sale" className="group">
-                    View All Sales
-                    <ArrowRight className="ml-2 h-4 w-6 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-              </div>
             </motion.div>
-            <motion.div {...fadeInUp} className="hidden md:block">
-              <Button
-                asChild
-                variant="default"
-                className="bg-primary text-white hover:bg-primary/90"
-              >
-                <Link to="/sale" className="group">
-                  View All Sales
-                  <ArrowRight className="ml-2 h-4 w-6 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-            </motion.div>
-          </div>
-
-          <div className="relative overflow-hidden px-2 md:px-4">
-            <motion.div 
-              className="flex gap-4 md:gap-6 product-scroll group/list"
-              animate={scrollAnimation}
-              style={{ 
-                willChange: "transform",
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden"
-              }}
-              whileHover={{ animationPlayState: "paused" }}
+            <Button
+              asChild
+              variant="default"
+              className="hidden md:flex bg-primary text-white hover:bg-primary/90"
             >
-              {[...Array(2)].map((_, index) => (
-                <div key={`row-${index}`} className="flex gap-4 md:gap-6">
-                  {[
-                    {
-                      id: "sale1",
-                      name: "Premium Leather Derby",
-                      price: 299.99,
-                      image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509",
-                      category: "Men's Shoes",
-                      isSale: true,
-                      discount: 30,
-                      tags: ["Leather", "Formal"],
-                      slug: "premium-leather-derby"
-                    },
-                    {
-                      id: "sale2",
-                      name: "Designer High Heels",
-                      price: 249.99,
-                      image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2",
-                      category: "Women's Shoes",
-                      isSale: true,
-                      discount: 40,
-                      tags: ["Designer", "Evening"],
-                      slug: "designer-high-heels"
-                    },
-                    {
-                      id: "sale3",
-                      name: "Comfort Sport Shoes",
-                      price: 179.99,
-                      image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2",
-                      category: "Sport Shoes",
-                      isSale: true,
-                      discount: 25,
-                      tags: ["Sport", "Comfort"],
-                      slug: "comfort-sport-shoes"
-                    },
-                    {
-                      id: "sale4",
-                      name: "Classic Suede Boots",
-                      price: 329.99,
-                      image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d",
-                      category: "Men's Shoes",
-                      isSale: true,
-                      discount: 35,
-                      tags: ["Suede", "Winter"],
-                      slug: "classic-suede-boots"
-                    },
-                    {
-                      id: "sale5",
-                      name: "Limited Edition Sneakers",
-                      price: 289.99,
-                      image: "https://images.unsplash.com/photo-1549298916-b41d501d3772",
-                      category: "Men's Shoes",
-                      isSale: true,
-                      discount: 45,
-                      tags: ["Limited", "Casual"],
-                      slug: "limited-edition-sneakers"
-                    }
-                  ].map((product) => (
-                    <div 
-                      key={`${product.id}-${index}`} 
-                      className={`min-w-[280px] w-[280px] transform ${isMobile ? 'scale-90' : ''}`}
-                    >
-                      <ProductCard {...product} />
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </motion.div>
+              <Link to="/sale" className="group">
+                View All Sales
+                <ArrowRight className="ml-2 h-4 w-6 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
           </div>
-
-          <motion.div 
-            {...fadeInUp}
-            className="mt-12 text-center"
-          >
-            <p className="text-gray-600 mb-4">Sale Ends In</p>
-            <div className="flex justify-center gap-4">
-              {[
-                { value: "13", label: "Days" },
-                { value: "09", label: "Hours" },
-                { value: "04", label: "Minutes" },
-                { value: "32", label: "Seconds" }
-              ].map(({ value, label }) => (
-                <div key={label} className="bg-white rounded-lg shadow-md p-4 min-w-[80px]">
-                  <div className="text-2xl font-bold text-primary">{value}</div>
-                  <div className="text-sm text-gray-500">{label}</div>
-                </div>
+          
+          {isLoadingSale ? (
+            <div className="flex justify-center">
+              <LoadingSpinner />
+            </div>
+          ) : saleProducts && saleProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {saleProducts.map((product) => (
+                <motion.div key={product.id} {...fadeInUp}>
+                  <ProductCard
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    match_at_price={product.match_at_price}
+                    product_images={product.product_images}
+                    slug={product.slug}
+                    category={product.product_type}
+                  />
+                </motion.div>
               ))}
             </div>
-          </motion.div>
+          ) : (
+            <p className="text-center text-gray-500">No sale products available</p>
+          )}
+          
+          <div className="md:hidden mt-8 text-center">
+            <Button
+              asChild
+              variant="default"
+              className="bg-primary text-white hover:bg-primary/90"
+            >
+              <Link to="/sale" className="group">
+                View All Sales
+                <ArrowRight className="ml-2 h-4 w-6 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
+      {/* Featured Products Section */}
       <section className="py-24 px-4">
-        <div className="container mx-auto overflow-hidden">
-          <div className="flex justify-between items-center mb-12">
-            <motion.h2 
-              {...fadeInUp}
-              className="font-jakarta text-3xl md:text-4xl font-bold"
-            >
-              Featured Products
-            </motion.h2>
-            <motion.div {...fadeInUp}>
-              <Button
-                asChild
-                variant="ghost"
-                className="text-primary hover:text-primary-600"
-              >
-                <Link to="/men" className="group">
-                  View All
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-            </motion.div>
-          </div>
-
-          <div className="relative overflow-hidden px-2 md:px-4">
-            <motion.div 
-              className="flex gap-6 product-scroll group/list"
-              animate={scrollAnimation}
-              style={{ 
-                willChange: "transform",
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden"
-              }}
-              whileHover={{ animationPlayState: "paused" }}
-            >
-              {[...Array(2)].map((_, index) => (
-                <div key={`featured-row-${index}`} className="flex gap-6">
-                  {featuredProducts.map((product) => (
-                    <div 
-                      key={`${product.id}-${index}`} 
-                      className={`min-w-[280px] w-[280px] transform ${isMobile ? 'scale-90' : ''}`}
-                    >
-                      <ProductCard {...product} />
-                    </div>
-                  ))}
-                </div>
+        <div className="container mx-auto">
+          <motion.h2 
+            {...fadeInUp}
+            className="font-jakarta text-3xl md:text-4xl font-bold text-center mb-12"
+          >
+            Featured Products
+          </motion.h2>
+          {isLoadingFeatured ? (
+            <div className="flex justify-center">
+              <LoadingSpinner />
+            </div>
+          ) : featuredProducts && featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {featuredProducts.map((product) => (
+                <motion.div key={product.id} {...fadeInUp}>
+                  <ProductCard
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    match_at_price={product.match_at_price}
+                    product_images={product.product_images}
+                    slug={product.slug}
+                    category={product.product_type}
+                  />
+                </motion.div>
               ))}
-            </motion.div>
-          </div>
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">No featured products available</p>
+          )}
         </div>
       </section>
 
+      {/* Newsletter Section */}
       <section className="py-24 px-4 bg-gradient-to-br from-primary to-primary-dark text-white">
         <div className="container mx-auto max-w-4xl text-center">
           <motion.div
@@ -392,7 +308,7 @@ const Home = () => {
               />
               <Button
                 size="lg"
-                className="bg-white text-primary-900 hover:bg-white/90"
+                className="bg-white text-primary hover:bg-white/70"
               >
                 Subscribe
               </Button>

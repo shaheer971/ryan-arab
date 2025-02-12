@@ -161,7 +161,7 @@ const Womens = () => {
                               name={product.name}
                               price={product.price}
                               match_at_price={product.match_at_price}
-                              image={product.product_images?.[0]?.url || '/placeholder.svg'}
+                              product_images={product.product_images}
                               category={product.collection}
                               tags={[product.collection]}
                             />

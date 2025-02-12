@@ -10,14 +10,19 @@ import {
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
+interface ProductImage {
+  url: string;
+  is_thumbnail: boolean;
+}
+
 interface ProductCardProps {
   id: string;
   slug: string;
   name: string;
   price: number;
   match_at_price?: number;
-  image: string;
-  category: string;
+  product_images?: ProductImage[];
+  category?: string;
   tags?: string[];
 }
 
@@ -27,12 +32,17 @@ const ProductCard = ({
   name,
   price,
   match_at_price,
-  image,
+  product_images,
   category,
   tags = [],
 }: ProductCardProps) => {
   const isOnSale = match_at_price && match_at_price > price;
   const discount = isOnSale ? Math.round(((match_at_price - price) / match_at_price) * 100) : undefined;
+  
+  // Get the thumbnail image or the first image
+  const displayImage = product_images?.find(img => img.is_thumbnail)?.url || 
+                      product_images?.[0]?.url ||
+                      'https://via.placeholder.com/400x400?text=No+Image';
 
   return (
     <motion.div
@@ -46,7 +56,7 @@ const ProductCard = ({
             {/* Product Image */}
             <div className="aspect-square overflow-hidden bg-gray-100">
               <img
-                src={image}
+                src={displayImage}
                 alt={name}
                 className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
               />
@@ -88,7 +98,9 @@ const ProductCard = ({
           >
             {name}
           </Link>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">{category}</p>
+          {category && (
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">{category}</p>
+          )}
         </CardContent>
 
         <CardFooter className="p-4 pt-0 flex flex-col gap-2">
@@ -96,15 +108,15 @@ const ProductCard = ({
             {isOnSale ? (
               <>
                 <span className="text-base sm:text-lg font-bold text-primary">
-                  ${price.toFixed(2)}
+                  ${(price || 0).toFixed(2)}
                 </span>
                 <span className="text-xs sm:text-sm text-gray-500 line-through">
-                  ${match_at_price.toFixed(2)}
+                  ${(match_at_price || 0).toFixed(2)}
                 </span>
               </>
             ) : (
               <span className="text-base sm:text-lg font-bold text-primary">
-                ${price.toFixed(2)}
+                ${(price || 0).toFixed(2)}
               </span>
             )}
           </div>
