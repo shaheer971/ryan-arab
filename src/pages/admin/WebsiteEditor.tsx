@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ProductCard from "@/components/ProductCard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface ProductImage {
   id: string;
@@ -50,6 +52,8 @@ interface FeaturedProduct {
 const WebsiteEditor = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
   // Fetch all products
   const { data: products, isLoading: isLoadingProducts } = useQuery({
@@ -162,14 +166,14 @@ const WebsiteEditor = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(['featured-products']);
       toast({
-        title: "Success",
-        description: "Product added successfully.",
+        title: t('admin.websiteEditor.success'),
+        description: t('admin.websiteEditor.productAddedSuccess'),
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to add product. Please try again.",
+        title: t('admin.websiteEditor.error'),
+        description: t('admin.websiteEditor.productAddError'),
         variant: "destructive",
       });
     }
@@ -191,14 +195,14 @@ const WebsiteEditor = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(['featured-products']);
       toast({
-        title: "Success",
-        description: "Product removed successfully.",
+        title: t('admin.websiteEditor.success'),
+        description: t('admin.websiteEditor.productRemovedSuccess'),
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to remove product. Please try again.",
+        title: t('admin.websiteEditor.error'),
+        description: t('admin.websiteEditor.productRemoveError'),
         variant: "destructive",
       });
     }
@@ -218,148 +222,158 @@ const WebsiteEditor = () => {
     return products?.filter(p => !sectionProductIds.has(p.id)) || [];
   };
 
+  const handleAddToFeatured = (product: Product) => {
+    addProductMutation.mutate({ productId: product.id, section: 'featured' });
+  };
+
+  const handleAddToSale = (product: Product) => {
+    addProductMutation.mutate({ productId: product.id, section: 'sale' });
+  };
+
   if (isLoadingProducts || isLoadingFeatured) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner />
+        <span className={cn("ml-2", isArabic && "font-noto-kufi-arabic")}>
+          {t('admin.websiteEditor.loading')}
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-satoshi">Homepage Editor</h1>
+    <div className="p-8 space-y-6">
+      <div>
+        <h1 className={cn("text-3xl font-bold", isArabic && "font-noto-kufi-arabic")}>
+          {t('admin.websiteEditor.title')}
+        </h1>
+        <p className={cn("text-gray-500 mt-1", isArabic && "font-noto-kufi-arabic")}>
+          {t('admin.websiteEditor.subtitle')}
+        </p>
       </div>
 
-      <Tabs defaultValue="featured" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="featured">Featured Products</TabsTrigger>
-          <TabsTrigger value="sale">Sale Products</TabsTrigger>
+      <Tabs defaultValue="featured" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="featured" className={cn(isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.websiteEditor.sections.featuredProducts')}
+          </TabsTrigger>
+          <TabsTrigger value="sale" className={cn(isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.websiteEditor.sections.saleProducts')}
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="featured" className="space-y-4">
+        <TabsContent value="featured">
           <Card>
             <CardHeader>
-              <CardTitle>Featured Products</CardTitle>
+              <CardTitle className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {t('admin.websiteEditor.sections.featuredProducts')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {getFeaturedProducts().map((fp, index) => (
-                    <div key={fp.id} className="relative group">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getFeaturedProducts().map((fp, index) => (
+                  <div key={fp.id} className="relative group">
+                    <ProductCard
+                      id={fp.product.id}
+                      name={isArabic ? fp.product.name_arabic : fp.product.name}
+                      price={fp.product.price}
+                      match_at_price={fp.product.match_at_price}
+                      product_images={fp.product.product_images}
+                      slug={fp.product.slug}
+                      category={fp.product.product_type}
+                      hideAddToCart
+                      onActionClick={() => removeProductMutation.mutate(fp.id)}
+                      actionLabel={t('admin.websiteEditor.removeFromFeatured')}
+                      actionVariant="destructive"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <h3 className={cn("text-lg font-semibold mb-2", isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.websiteEditor.addProducts')}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {getAvailableProducts('featured').map((product) => (
+                    <div key={product.id} className="relative group">
                       <ProductCard
-                        id={fp.product.id}
-                        name={fp.product.name}
-                        price={fp.product.price}
-                        match_at_price={fp.product.match_at_price}
-                        product_images={fp.product.product_images}
-                        slug={fp.product.slug}
-                        category={fp.product.product_type}
+                        id={product.id}
+                        name={isArabic ? product.name_arabic : product.name}
+                        price={product.price}
+                        match_at_price={product.match_at_price}
+                        product_images={product.product_images}
+                        slug={product.slug}
+                        category={product.product_type}
+                        hideAddToCart
+                        onActionClick={() => handleAddToFeatured(product)}
+                        actionLabel={t('admin.websiteEditor.addToFeatured')}
+                        actionVariant="default"
                       />
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeProductMutation.mutate(fp.id)}
-                      >
-                        Remove
-                      </Button>
                     </div>
                   ))}
-                </div>
-                <div className="mt-4">
-                  <h3 className="text-lg font-semibold mb-2">Add Products</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {getAvailableProducts('featured').map((product) => (
-                      <div key={product.id} className="relative group">
-                        <ProductCard
-                          id={product.id}
-                          name={product.name}
-                          price={product.price}
-                          match_at_price={product.match_at_price}
-                          product_images={product.product_images}
-                          slug={product.slug}
-                          category={product.product_type}
-                        />
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => addProductMutation.mutate({ productId: product.id, section: 'featured' })}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="sale" className="space-y-4">
+        <TabsContent value="sale">
           <Card>
             <CardHeader>
-              <CardTitle>Sale Products</CardTitle>
+              <CardTitle className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {t('admin.websiteEditor.sections.saleProducts')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {getSaleProducts().map((fp, index) => (
-                    <div key={fp.id} className="relative group">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getSaleProducts().map((fp, index) => (
+                  <div key={fp.id} className="relative group">
+                    <ProductCard
+                      id={fp.product.id}
+                      name={isArabic ? fp.product.name_arabic : fp.product.name}
+                      price={fp.product.price}
+                      match_at_price={fp.product.match_at_price}
+                      product_images={fp.product.product_images}
+                      slug={fp.product.slug}
+                      category={fp.product.product_type}
+                      hideAddToCart
+                      onActionClick={() => removeProductMutation.mutate(fp.id)}
+                      actionLabel={t('admin.websiteEditor.removeFromSale')}
+                      actionVariant="destructive"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <h3 className={cn("text-lg font-semibold mb-2", isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.websiteEditor.addProducts')}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {getAvailableProducts('sale').map((product) => (
+                    <div key={product.id} className="relative group">
                       <ProductCard
-                        id={fp.product.id}
-                        name={fp.product.name}
-                        price={fp.product.price}
-                        match_at_price={fp.product.match_at_price}
-                        product_images={fp.product.product_images}
-                        slug={fp.product.slug}
-                        category={fp.product.product_type}
+                        id={product.id}
+                        name={isArabic ? product.name_arabic : product.name}
+                        price={product.price}
+                        match_at_price={product.match_at_price}
+                        product_images={product.product_images}
+                        slug={product.slug}
+                        category={product.product_type}
+                        hideAddToCart
+                        onActionClick={() => handleAddToSale(product)}
+                        actionLabel={t('admin.websiteEditor.addToSale')}
+                        actionVariant="default"
                       />
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeProductMutation.mutate(fp.id)}
-                      >
-                        Remove
-                      </Button>
                     </div>
                   ))}
-                </div>
-                <div className="mt-4">
-                  <h3 className="text-lg font-semibold mb-2">Add Products</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {getAvailableProducts('sale').map((product) => (
-                      <div key={product.id} className="relative group">
-                        <ProductCard
-                          id={product.id}
-                          name={product.name}
-                          price={product.price}
-                          match_at_price={product.match_at_price}
-                          product_images={product.product_images}
-                          slug={product.slug}
-                          category={product.product_type}
-                        />
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => addProductMutation.mutate({ productId: product.id, section: 'sale' })}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {isLoadingProducts && <LoadingSpinner />}
     </div>
   );
 };

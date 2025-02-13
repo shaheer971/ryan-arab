@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/utils";
 import { PostgrestError } from "@supabase/supabase-js";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -28,6 +30,8 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -46,14 +50,14 @@ const Users = () => {
       const pgError = error as PostgrestError;
       console.error("Error fetching users:", pgError);
       toast({
-        title: "Error",
-        description: pgError.message || "Failed to fetch users. Please try again.",
+        title: t('admin.usersPage.error.title'),
+        description: pgError.message || t('admin.usersPage.error.description'),
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, t]);
 
   useEffect(() => {
     fetchUsers();
@@ -70,22 +74,26 @@ const Users = () => {
   });
 
   if (isLoading) {
-    return <div className="p-8">Loading users...</div>;
+    return <div className={cn("p-8", isArabic && "font-noto-kufi-arabic")}>{t('admin.usersPage.loading')}</div>;
   }
 
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Users</h1>
-        <p className="text-gray-500 mt-1">Manage registered users</p>
+        <h1 className={cn("text-3xl font-bold", isArabic && "font-noto-kufi-arabic")}>
+          {t('admin.usersPage.title')}
+        </h1>
+        <p className={cn("text-gray-500 mt-1", isArabic && "font-noto-kufi-arabic")}>
+          {t('admin.usersPage.subtitle')}
+        </p>
       </div>
 
       <div className="mb-6">
         <Input
-          placeholder="Search users..."
+          placeholder={t('admin.usersPage.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className={cn("max-w-sm", isArabic && "font-noto-kufi-arabic")}
         />
       </div>
 
@@ -93,31 +101,49 @@ const Users = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Registration Date</TableHead>
-              <TableHead>Last Updated</TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {t('admin.usersPage.table.name')}
+              </TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {t('admin.usersPage.table.email')}
+              </TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {t('admin.usersPage.table.phone')}
+              </TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {t('admin.usersPage.table.registrationDate')}
+              </TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {t('admin.usersPage.table.lastUpdated')}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>
-                  <div className="font-medium">
+                  <div className={cn("font-medium", isArabic && "font-noto-kufi-arabic")}>
                     {user.first_name} {user.last_name}
                   </div>
                 </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.phone}</TableCell>
-                <TableCell>{formatDate(user.created_at)}</TableCell>
-                <TableCell>{formatDate(user.updated_at)}</TableCell>
+                <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {user.email}
+                </TableCell>
+                <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {user.phone}
+                </TableCell>
+                <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {formatDate(user.created_at)}
+                </TableCell>
+                <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {formatDate(user.updated_at)}
+                </TableCell>
               </TableRow>
             ))}
             {filteredUsers.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">
-                  {searchTerm ? "No users found matching your search" : "No users registered yet"}
+                <TableCell colSpan={5} className={cn("text-center py-4", isArabic && "font-noto-kufi-arabic")}>
+                  {searchTerm ? t('admin.usersPage.noSearchResults') : t('admin.usersPage.noUsers')}
                 </TableCell>
               </TableRow>
             )}

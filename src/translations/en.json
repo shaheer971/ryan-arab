@@ -1,0 +1,433 @@
+{
+  "navigation": {
+    "home": "Home",
+    "men": "Men",
+    "women": "Women",
+    "kids": "Kids",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your account to continue"
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Create a new account to get started"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "phone": "Phone Number",
+      "areaCode": "Area Code"
+    },
+    "placeholders": {
+      "phone": "Enter phone number"
+    },
+    "buttons": {
+      "login": "Sign In",
+      "signup": "Sign Up",
+      "createAccount": "Don't have an account? Create one",
+      "haveAccount": "Already have an account? Sign in"
+    },
+    "errors": {
+      "passwordsMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "requiredFields": "Please fill in all required fields",
+      "invalidPhone": "Please enter a valid phone number"
+    },
+    "toast": {
+      "adminLoginSuccess": "Admin login successful",
+      "adminWelcome": "Welcome to the Admin Panel!",
+      "loginSuccess": "Login successful",
+      "welcome": "Welcome back!",
+      "signupSuccess": "Account created",
+      "signupWelcome": "Welcome to Ryan Arab!"
+    }
+  },
+  "admin": {
+    "adminPanel": "Admin Panel",
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "orders": "Orders",
+    "customers": "Customers",
+    "users": "Users",
+    "settings": "Settings",
+    "websiteEditorMenu": "Website Editor",
+    "websiteEditor": {
+      "title": "Website Editor",
+      "subtitle": "Manage Featured and Sale Products",
+      "sections": {
+        "featuredProducts": "Featured Products",
+        "saleProducts": "Sale Products"
+      },
+      "addProducts": "Add Products",
+      "addToFeatured": "Add to Featured",
+      "removeFromFeatured": "Remove from Featured",
+      "addToSale": "Add to Sale",
+      "removeFromSale": "Remove from Sale",
+      "discount": "{{percent}}% OFF",
+      "productType": {
+        "men": "Men",
+        "women": "Women"
+      },
+      "price": {
+        "current": "${{price}}",
+        "original": "${{originalPrice}}"
+      }
+    },
+    "addProduct": {
+      "title": "Add New Product",
+      "sections": {
+        "basicInfo": "Basic Information",
+        "pricing": "Pricing",
+        "organization": "Organization",
+        "sizeVariants": "Size Variants",
+        "colorVariants": "Color Variants",
+        "inventory": "Inventory"
+      },
+      "fields": {
+        "nameEnglish": "Product Name (English)",
+        "nameArabic": "Product Name (Arabic)",
+        "descriptionEnglish": "Product Description (English)",
+        "descriptionArabic": "Product Description (Arabic)",
+        "price": "Price",
+        "compareAtPrice": "Compare at Price",
+        "productType": "Product Type",
+        "collection": "Collection",
+        "sku": "SKU",
+        "quantity": "Quantity",
+        "size": "Size",
+        "color": "Color",
+        "stockQuantity": "Stock Quantity",
+        "productImages": "Product Images"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "create": "Create Product",
+        "addSize": "Add Size",
+        "addColor": "Add Color",
+        "removeVariant": "Remove",
+        "uploadImages": "Upload Images"
+      },
+      "placeholders": {
+        "selectProductType": "Select product type",
+        "selectCollection": "Select collection",
+        "enterSize": "Enter size",
+        "enterColor": "Enter color",
+        "enterQuantity": "Enter quantity"
+      },
+      "options": {
+        "productType": {
+          "men": "Men",
+          "women": "Women"
+        },
+        "collection": {
+          "casual": "Casual",
+          "formal": "Formal",
+          "sport": "Sport",
+          "traditional": "Traditional"
+        }
+      },
+      "errors": {
+        "nameRequired": "Product name in English is required",
+        "nameArabicRequired": "Product name in Arabic is required",
+        "validPriceRequired": "Please enter a valid price",
+        "validQuantityRequired": "Please enter a valid quantity",
+        "descriptionRequired": "Product description in English is required",
+        "descriptionArabicRequired": "Product description in Arabic is required",
+        "imageRequired": "At least one image is required",
+        "skuRequired": "SKU is required",
+        "skuExists": "SKU already exists",
+        "sizeVariantRequired": "At least one size variant is required",
+        "colorVariantRequired": "At least one color variant is required",
+        "invalidSizeVariants": "Please enter all size variant information",
+        "invalidColorVariants": "Please enter all color variant information"
+      },
+      "toast": {
+        "validationError": "Validation Error",
+        "fillRequiredFields": "Please fill in all required fields",
+        "error": "Error",
+        "skuExists": "SKU already exists",
+        "success": "Product Added Successfully",
+        "successDescription": "Product has been added and images uploaded successfully"
+      }
+    },
+    "editProduct": {
+      "title": "Edit Product",
+      "sections": {
+        "basicInfo": "Basic Information",
+        "pricing": "Pricing",
+        "organization": "Organization",
+        "variants": "Variants",
+        "inventory": "Inventory",
+        "images": "Images"
+      },
+      "fields": {
+        "nameEnglish": "Product Name (English)",
+        "nameArabic": "Product Name (Arabic)",
+        "descriptionEnglish": "Product Description (English)",
+        "descriptionArabic": "Product Description (Arabic)",
+        "price": "Price",
+        "compareAtPrice": "Compare at Price",
+        "productType": "Product Type",
+        "collection": "Collection",
+        "sku": "SKU",
+        "quantity": "Quantity",
+        "sizeVariants": "Size Variants",
+        "colorVariants": "Color Variants",
+        "status": "Status"
+      },
+      "placeholders": {
+        "selectProductType": "Select product type",
+        "selectCollection": "Select collection",
+        "enterSize": "Enter size",
+        "enterColor": "Enter color",
+        "enterQuantity": "Enter quantity"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "addSize": "Add Size",
+        "addColor": "Add Color",
+        "removeVariant": "Remove",
+        "uploadImages": "Upload Images"
+      },
+      "toast": {
+        "success": "Product Updated Successfully",
+        "successDescription": "Product has been updated and images uploaded successfully",
+        "error": "Error",
+        "errorDescription": "An error occurred while updating the product"
+      }
+    },
+    "dashboardPage": {
+      "overview": "Overview",
+      "lastUpdated": "Last updated {{time}} ago",
+      "stats": {
+        "totalRevenue": "Total Revenue",
+        "vsLastMonth": "vs. Last Month",
+        "activeOrders": "Active Orders",
+        "newToday": "New Today",
+        "totalCustomers": "Total Customers",
+        "newUsers": "New Users",
+        "lowStockItems": "Low Stock Items",
+        "alert": "Alert",
+        "needsAttention": "Needs Attention"
+      },
+      "recentOrders": {
+        "title": "Recent Orders",
+        "subtitle": "Last 4 orders received",
+        "orderNumber": "Order Number",
+        "customer": "Customer",
+        "amount": "Amount",
+        "status": "Status",
+        "statuses": {
+          "completed": "Completed",
+          "processing": "Processing",
+          "pending": "Pending"
+        }
+      },
+      "charts": {
+        "revenueOverview": "Revenue Overview",
+        "revenueBreakdown": "Monthly Revenue Breakdown",
+        "ordersTrend": "Orders Trend",
+        "ordersSummary": "Monthly Orders Summary"
+      }
+    },
+    "productsPage": {
+      "title": "Products",
+      "subtitle": "Manage products",
+      "addNew": "Add New Product",
+      "searchPlaceholder": "Search products...",
+      "status": {
+        "all": "All Status",
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "table": {
+        "image": "Image",
+        "productDetails": "Product Details",
+        "collection": "Collection",
+        "inventory": {
+          "title": "Inventory",
+          "total": "Total",
+          "available": "Available"
+        },
+        "price": "Price",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "sections": {
+        "menProducts": "Men's Products",
+        "womenProducts": "Women's Products"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel"
+      },
+      "deleteDialog": {
+        "title": "Are you sure?",
+        "description": "This action cannot be undone. This will permanently delete the product and all associated data."
+      },
+      "loading": "Loading products..."
+    },
+    "ordersPage": {
+      "title": "Orders",
+      "subtitle": "Manage customer orders",
+      "exportOrders": "Export Orders",
+      "searchPlaceholder": "Search orders...",
+      "table": {
+        "orderId": "Order ID",
+        "customer": "Customer",
+        "date": "Date",
+        "status": "Status",
+        "total": "Total",
+        "actions": "Actions"
+      },
+      "status": {
+        "all": "All",
+        "pending": "Pending",
+        "processing": "Processing",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "actions": {
+        "view": "View"
+      }
+    },
+    "customersPage": {
+      "title": "Customers",
+      "subtitle": "Manage customers",
+      "exportCustomers": "Export Customers",
+      "searchPlaceholder": "Search customers...",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "orders": "Orders",
+        "totalSpent": "Total Spent",
+        "lastOrder": "Last Order",
+        "actions": "Actions"
+      }
+    },
+    "usersPage": {
+      "title": "Users",
+      "subtitle": "Manage users",
+      "searchPlaceholder": "Search users...",
+      "loading": "Loading users...",
+      "noUsers": "No users found",
+      "noSearchResults": "No search results",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "registrationDate": "Registration Date",
+        "lastUpdated": "Last Updated",
+        "role": "Role",
+        "lastLogin": "Last Login",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "roles": {
+        "admin": "Admin",
+        "editor": "Editor",
+        "viewer": "Viewer"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "error": {
+        "title": "Error fetching users",
+        "description": "An error occurred while fetching user data"
+      }
+    },
+    "settings": {
+      "settingsPage": {
+        "title": "Settings",
+        "saveChanges": "Save Changes",
+        "account": {
+          "title": "Account Settings",
+          "email": "Email Address",
+          "displayName": "Display Name"
+        },
+        "notifications": {
+          "title": "Notifications",
+          "emailNotifications": {
+            "title": "Email Notifications",
+            "description": "Receive email about new orders"
+          },
+          "orderUpdates": {
+            "title": "Order Updates",
+            "description": "Get notified about order status changes"
+          }
+        },
+        "security": {
+          "title": "Security",
+          "currentPassword": "Current Password",
+          "newPassword": "New Password",
+          "confirmPassword": "Confirm New Password"
+        },
+        "preferences": {
+          "title": "Preferences",
+          "darkMode": {
+            "title": "Dark Mode",
+            "description": "Enable dark mode for the admin dashboard"
+          }
+        },
+        "toast": {
+          "success": "Settings saved",
+          "description": "Your settings have been saved successfully"
+        }
+      },
+      "dashboardPage": {
+        "overview": "Overview",
+        "lastUpdated": "Last updated: {{time}} ago",
+        "stats": {
+          "totalRevenue": "Total Revenue",
+          "totalOrders": "Total Orders",
+          "totalCustomers": "Total Customers",
+          "totalProducts": "Total Products"
+        },
+        "recentOrders": {
+          "title": "Recent Orders",
+          "orderID": "Order ID",
+          "customer": "Customer",
+          "amount": "Amount",
+          "status": "Status",
+          "viewAll": "View All Orders"
+        },
+        "salesOverview": {
+          "title": "Sales Overview",
+          "subtitle": "Compare sales and orders over time"
+        }
+      }
+    }
+  },
+  "footer": {
+    "navigation": {
+      "men": "Men",
+      "women": "Women",
+      "kids": "Kids",
+      "about": "About Us"
+    },
+    "customerService": {
+      "title": "Customer Service",
+      "shipping": "Shipping Information",
+      "returns": "Returns Policy",
+      "faq": "FAQ"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "description": "Subscribe to our newsletter for latest updates and offers",
+      "placeholder": "Enter your email",
+      "subscribe": "Subscribe"
+    },
+    "copyright": " 2024 Ryan Arab. All rights reserved."
+  }
+}

@@ -8,6 +8,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 // Area codes for common countries
 const areaCodes = [
@@ -32,23 +34,25 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setUser, setIsAdmin } = useAuthStore();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
   const validateSignupForm = () => {
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t('auth.errors.passwordsMismatch'));
       return false;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      setError(t('auth.errors.passwordTooShort'));
       return false;
     }
     if (!firstName || !lastName) {
-      setError("Please fill in all required fields");
+      setError(t('auth.errors.requiredFields'));
       return false;
     }
     const phoneRegex = /^\d{9,10}$/;
     if (!phoneRegex.test(phoneNumber)) {
-      setError("Please enter a valid phone number");
+      setError(t('auth.errors.invalidPhone'));
       return false;
     }
     return true;
@@ -63,8 +67,8 @@ const Login = () => {
       if (email === "captainryanarab@gmail.com" && password === "Itis2025@") {
         setIsAdmin(true);
         toast({
-          title: "Admin Login Successful",
-          description: "Welcome to the admin dashboard!",
+          title: t('auth.toast.adminLoginSuccess'),
+          description: t('auth.toast.adminWelcome'),
         });
         navigate("/admin");
         return;
@@ -84,8 +88,8 @@ const Login = () => {
       if (signInData.user) {
         setUser(signInData.user);
         toast({
-          title: "Login successful",
-          description: "Welcome back!",
+          title: t('auth.toast.loginSuccess'),
+          description: t('auth.toast.welcome'),
         });
         navigate("/");
       }
@@ -133,8 +137,8 @@ const Login = () => {
 
         setUser(signUpData.user);
         toast({
-          title: "Account created",
-          description: "Welcome to Ryan Arab!",
+          title: t('auth.toast.signupSuccess'),
+          description: t('auth.toast.signupWelcome'),
         });
         navigate("/");
       }
@@ -151,19 +155,25 @@ const Login = () => {
           <div className="max-w-md mx-auto">
             <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
               <div className="text-center mb-8 animate-slide-up">
-                <h1 className="font-jakarta text-3xl font-bold text-primary">
-                  {isLogin ? "Welcome Back" : "Create Account"}
+                <h1 className={cn(
+                  "font-jakarta text-3xl font-bold text-primary",
+                  isArabic && "font-noto-kufi-arabic"
+                )}>
+                  {isLogin ? t('auth.login.title') : t('auth.signup.title')}
                 </h1>
-                <p className="mt-2 text-gray-600 font-satoshi">
-                  {isLogin
-                    ? "Sign in to your account to continue"
-                    : "Create a new account to get started"}
+                <p className={cn(
+                  "mt-2 text-gray-600 font-satoshi",
+                  isArabic && "font-noto-kufi-arabic"
+                )}>
+                  {isLogin ? t('auth.login.subtitle') : t('auth.signup.subtitle')}
                 </p>
               </div>
 
               {error && (
                 <Alert variant="destructive" className="mb-6">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription className={cn(isArabic && "font-noto-kufi-arabic")}>
+                    {error}
+                  </AlertDescription>
                 </Alert>
               )}
 
@@ -171,114 +181,130 @@ const Login = () => {
                 {!isLogin && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="firstName" className="text-base">First Name</Label>
+                      <Label htmlFor="firstName" className={cn("text-base", isArabic && "font-noto-kufi-arabic")}>
+                        {t('auth.fields.firstName')}
+                      </Label>
                       <Input
                         id="firstName"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="h-12 rounded-lg"
+                        className={cn("h-12 rounded-lg", isArabic && "font-noto-kufi-arabic")}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-base">Last Name</Label>
+                      <Label htmlFor="lastName" className={cn("text-base", isArabic && "font-noto-kufi-arabic")}>
+                        {t('auth.fields.lastName')}
+                      </Label>
                       <Input
                         id="lastName"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="h-12 rounded-lg"
+                        className={cn("h-12 rounded-lg", isArabic && "font-noto-kufi-arabic")}
                         required
                       />
                     </div>
                   </>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-base">Email</Label>
+                  <Label htmlFor="email" className={cn("text-base", isArabic && "font-noto-kufi-arabic")}>
+                    {t('auth.fields.email')}
+                  </Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 rounded-lg"
+                    className={cn("h-12 rounded-lg", isArabic && "font-noto-kufi-arabic")}
                     required
                   />
                 </div>
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-base">Phone Number</Label>
-                    <div className="flex gap-2">
-                      <Select value={areaCode} onValueChange={setAreaCode}>
-                        <SelectTrigger className="w-[140px]">
-                          <SelectValue placeholder="Area Code" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {areaCodes.map((ac) => (
-                            <SelectItem key={ac.code} value={ac.code}>
-                              {ac.code} {ac.country}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="h-12 rounded-lg flex-1"
-                        placeholder="Phone Number"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
+
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-base">Password</Label>
+                  <Label htmlFor="password" className={cn("text-base", isArabic && "font-noto-kufi-arabic")}>
+                    {t('auth.fields.password')}
+                  </Label>
                   <Input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 rounded-lg"
+                    className={cn("h-12 rounded-lg", isArabic && "font-noto-kufi-arabic")}
                     required
                   />
                 </div>
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-base">Confirm Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="h-12 rounded-lg"
-                      required
-                    />
-                  </div>
-                )}
-                <Button type="submit" size="lg" className="w-full h-12 text-base bg-primary hover:bg-primary-light animate-scale">
-                  {isLogin ? "Sign In" : "Create Account"}
-                </Button>
-              </form>
 
-              <div className="mt-6 text-center animate-slide-up [animation-delay:400ms]">
-                <button
-                  onClick={() => {
-                    setIsLogin(!isLogin);
-                    setError("");
-                    setEmail("");
-                    setPassword("");
-                    setFirstName("");
-                    setLastName("");
-                    setPhoneNumber("");
-                    setConfirmPassword("");
-                  }}
-                  className="text-sm text-primary hover:text-primary-light font-satoshi transition-colors"
+                {!isLogin && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className={cn("text-base", isArabic && "font-noto-kufi-arabic")}>
+                        {t('auth.fields.confirmPassword')}
+                      </Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className={cn("h-12 rounded-lg", isArabic && "font-noto-kufi-arabic")}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className={cn("text-base", isArabic && "font-noto-kufi-arabic")}>
+                        {t('auth.fields.phone')}
+                      </Label>
+                      <div className="flex gap-2">
+                        <Select value={areaCode} onValueChange={setAreaCode}>
+                          <SelectTrigger className={cn("w-[140px]", isArabic && "font-noto-kufi-arabic")}>
+                            <SelectValue placeholder={t('auth.fields.areaCode')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {areaCodes.map((ac) => (
+                              <SelectItem
+                                key={ac.code}
+                                value={ac.code}
+                                className={cn(isArabic && "font-noto-kufi-arabic")}
+                              >
+                                {ac.country} ({ac.code})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className={cn("flex-1 h-12 rounded-lg", isArabic && "font-noto-kufi-arabic")}
+                          placeholder={t('auth.placeholders.phone')}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <Button
+                  type="submit"
+                  className={cn("w-full h-12 text-base", isArabic && "font-noto-kufi-arabic")}
                 >
-                  {isLogin
-                    ? "Don't have an account? Sign up"
-                    : "Already have an account? Sign in"}
-                </button>
-              </div>
+                  {isLogin ? t('auth.buttons.login') : t('auth.buttons.signup')}
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsLogin(!isLogin)}
+                    className={cn(
+                      "text-primary hover:underline",
+                      isArabic && "font-noto-kufi-arabic"
+                    )}
+                  >
+                    {isLogin ? t('auth.buttons.createAccount') : t('auth.buttons.haveAccount')}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -286,15 +312,5 @@ const Login = () => {
     </div>
   );
 };
-
-interface Profile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  updated_at: string;
-  created_at: string;
-}
 
 export default Login;

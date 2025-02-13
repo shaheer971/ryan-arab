@@ -23,12 +23,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import AddProductForm from "@/components/admin/AddProductForm";
 import { supabase } from "@/integrations/supabase/client";
-import { Pencil, Trash2, Image } from "lucide-react";
+import { Pencil, Trash2, Image, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface ProductVariant {
   id: string;
@@ -72,6 +73,8 @@ const Products = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -220,18 +223,18 @@ const Products = () => {
 
   const renderProductTable = (products: Product[], title: string) => (
     <div className="mb-8">
-      <h2 className="text-xl font-semibold mb-4">{title}</h2>
+      <h2 className={cn("text-xl font-semibold mb-4", isArabic && "font-noto-kufi-arabic")}>{title}</h2>
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Image</TableHead>
-              <TableHead>Product Details</TableHead>
-              <TableHead>Collection</TableHead>
-              <TableHead>Inventory</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.table.image')}</TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.table.productDetails')}</TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.table.collection')}</TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.table.inventory.title')}</TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.table.price')}</TableHead>
+              <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.table.status')}</TableHead>
+              <TableHead className={cn("text-right", isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.table.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -240,39 +243,45 @@ const Products = () => {
                 <TableCell>
                   <img
                     src={getThumbnailUrl(product.product_images)}
-                    alt={product.name}
+                    alt={isArabic ? product.name_arabic : product.name}
                     className="w-16 h-16 object-cover rounded"
                   />
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <div className="font-medium">{product.name}</div>
-                    <div className="text-sm text-gray-500">{product.name_arabic}</div>
-                    <div className="text-xs text-gray-400">SKU: {product.sku}</div>
+                    <div className={cn("font-medium", isArabic && "font-noto-kufi-arabic")}>
+                      {isArabic ? product.name_arabic : product.name}
+                    </div>
+                    <div className={cn("text-sm text-gray-500", isArabic && "font-noto-kufi-arabic")}>
+                      {isArabic ? product.name : product.name_arabic}
+                    </div>
+                    <div className={cn("text-xs text-gray-400", isArabic && "font-noto-kufi-arabic")}>
+                      SKU: {product.sku}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline">
+                  <Badge variant="outline" className={cn(isArabic && "font-noto-kufi-arabic")}>
                     {product.collection}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <div className="text-sm">
-                      Total: {product.inventory_count}
+                    <div className={cn("text-sm", isArabic && "font-noto-kufi-arabic")}>
+                      {t('admin.productsPage.table.inventory.total')}: {product.inventory_count}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      Available: {product.quantity}
+                    <div className={cn("text-xs text-gray-500", isArabic && "font-noto-kufi-arabic")}>
+                      {t('admin.productsPage.table.inventory.available')}: {product.quantity}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <div className="font-medium">
+                    <div className={cn("font-medium", isArabic && "font-noto-kufi-arabic")}>
                       {formatCurrency(product.price)}
                     </div>
                     {product.match_at_price && (
-                      <div className="text-sm text-gray-500 line-through">
+                      <div className={cn("text-sm text-gray-500 line-through", isArabic && "font-noto-kufi-arabic")}>
                         {formatCurrency(product.match_at_price)}
                       </div>
                     )}
@@ -287,14 +296,15 @@ const Products = () => {
                         ? "secondary"
                         : "outline"
                     }
+                    className={cn(isArabic && "font-noto-kufi-arabic")}
                   >
-                    {product.status}
+                    {t(`admin.productsPage.status.${product.status}`)}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <Link to={`/admin/products/edit/${product.id}`}>
-                    <Button variant="outline" size="sm">
-                      Edit
+                    <Button variant="outline" size="sm" className={cn(isArabic && "font-noto-kufi-arabic")}>
+                      {t('admin.productsPage.actions.edit')}
                     </Button>
                   </Link>
                   <AlertDialog>
@@ -308,19 +318,22 @@ const Products = () => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the product
-                          and all associated data.
+                        <AlertDialogTitle className={cn(isArabic && "font-noto-kufi-arabic")}>
+                          {t('admin.productsPage.deleteDialog.title')}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className={cn(isArabic && "font-noto-kufi-arabic")}>
+                          {t('admin.productsPage.deleteDialog.description')}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className={cn(isArabic && "font-noto-kufi-arabic")}>
+                          {t('admin.productsPage.actions.cancel')}
+                        </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDelete(product.id)}
-                          className="bg-red-500 hover:bg-red-600"
+                          className={cn("bg-red-500 hover:bg-red-600", isArabic && "font-noto-kufi-arabic")}
                         >
-                          Delete
+                          {t('admin.productsPage.actions.delete')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -342,42 +355,43 @@ const Products = () => {
   }
 
   if (isLoading) {
-    return <div className="p-8">Loading products...</div>;
+    return <div className={cn("p-8", isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.loading')}</div>;
   }
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Products</h1>
-          <p className="text-gray-500 mt-1">Manage your products</p>
+          <h1 className={cn("text-3xl font-bold", isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.title')}</h1>
+          <p className={cn("text-gray-500 mt-1", isArabic && "font-noto-kufi-arabic")}>{t('admin.productsPage.subtitle')}</p>
         </div>
-        <Button onClick={() => setShowAddForm(true)}>
+        <Button onClick={() => setShowAddForm(true)} className={cn(isArabic && "font-noto-kufi-arabic")}>
           <Plus className="h-4 w-4 mr-2" />
-          Add New Product
+          {t('admin.productsPage.addNew')}
         </Button>
       </div>
 
       <div className="flex gap-4 items-center mb-6">
         <Input
-          placeholder="Search products..."
+          placeholder={t('admin.productsPage.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className={cn("max-w-sm", isArabic && "font-noto-kufi-arabic")}
         />
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="border rounded-md p-2"
+          className={cn("border rounded-md p-2", isArabic && "font-noto-kufi-arabic")}
         >
-          <option value="all">All Status</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
+          <option value="all">{t('admin.productsPage.status.all')}</option>
+          <option value="draft">{t('admin.productsPage.status.draft')}</option>
+          <option value="published">{t('admin.productsPage.status.published')}</option>
+          <option value="archived">{t('admin.productsPage.status.archived')}</option>
         </select>
       </div>
 
-      {renderProductTable(menProducts, "Men's Products")}
-      {renderProductTable(womenProducts, "Women's Products")}
+      {renderProductTable(menProducts, t('admin.productsPage.sections.menProducts'))}
+      {renderProductTable(womenProducts, t('admin.productsPage.sections.womenProducts'))}
     </div>
   );
 };

@@ -17,55 +17,66 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface ProductFormFieldsProps {
   formData: ProductFormData;
   errors: Record<string, string>;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleSelectChange: (name: string, value: string) => void;
-  handleVariantChange: (type: 'size' | 'color', index: number, value: string, field: string) => void;
-  handleAddVariant: (type: 'size' | 'color') => void;
-  handleRemoveVariant: (type: 'size' | 'color', index: number) => void;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onSelectChange: (name: string, value: string) => void;
+  onVariantChange: (type: 'size' | 'color', index: number, value: string, field: string) => void;
+  onAddVariant: (type: 'size' | 'color') => void;
+  onRemoveVariant: (type: 'size' | 'color', index: number) => void;
 }
 
 export const ProductFormFields = ({
   formData,
   errors,
-  handleInputChange,
-  handleSelectChange,
-  handleVariantChange,
-  handleAddVariant,
-  handleRemoveVariant
+  onInputChange,
+  onSelectChange,
+  onVariantChange,
+  onAddVariant,
+  onRemoveVariant
 }: ProductFormFieldsProps) => {
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6">
       {/* Basic Information */}
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Basic Information</CardTitle>
+          <CardTitle className={cn("text-2xl", isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.addProduct.sections.basicInfo')}
+          </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="name">Product Name English *</Label>
+            <Label htmlFor="name" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.nameEnglish')}
+            </Label>
             <Input
               id="name"
               name="name"
               value={formData.name}
-              onChange={handleInputChange}
-              className={errors.name ? "border-red-500" : ""}
+              onChange={onInputChange}
+              className={cn(errors.name ? "border-red-500" : "", isArabic && "font-noto-kufi-arabic")}
               required
             />
             {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="name_arabic">Product Name Arabic *</Label>
+            <Label htmlFor="name_arabic" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.nameArabic')}
+            </Label>
             <Input
               id="name_arabic"
               name="name_arabic"
               value={formData.name_arabic}
-              onChange={handleInputChange}
-              className={errors.name_arabic ? "border-red-500" : ""}
+              onChange={onInputChange}
+              className={cn(errors.name_arabic ? "border-red-500" : "", "font-noto-kufi-arabic")}
               required
               dir="rtl"
             />
@@ -73,13 +84,15 @@ export const ProductFormFields = ({
           </div>
 
           <div className="md:col-span-2 space-y-2">
-            <Label htmlFor="product_description">Product Description English</Label>
+            <Label htmlFor="product_description" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.descriptionEnglish')}
+            </Label>
             <Textarea
               id="product_description"
               name="product_description"
               value={formData.product_description}
-              onChange={handleInputChange}
-              className={errors.product_description ? "border-red-500" : ""}
+              onChange={onInputChange}
+              className={cn(errors.product_description ? "border-red-500" : "", isArabic && "font-noto-kufi-arabic")}
               rows={4}
             />
             {errors.product_description && (
@@ -88,13 +101,15 @@ export const ProductFormFields = ({
           </div>
 
           <div className="md:col-span-2 space-y-2">
-            <Label htmlFor="product_description_arabic">Product Description Arabic</Label>
+            <Label htmlFor="product_description_arabic" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.descriptionArabic')}
+            </Label>
             <Textarea
               id="product_description_arabic"
               name="product_description_arabic"
               value={formData.product_description_arabic}
-              onChange={handleInputChange}
-              className={errors.product_description_arabic ? "border-red-500" : ""}
+              onChange={onInputChange}
+              className={cn(errors.product_description_arabic ? "border-red-500" : "", "font-noto-kufi-arabic")}
               rows={4}
               dir="rtl"
             />
@@ -108,34 +123,40 @@ export const ProductFormFields = ({
       {/* Pricing */}
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Pricing</CardTitle>
+          <CardTitle className={cn("text-2xl", isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.addProduct.sections.pricing')}
+          </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="price">Price (SAR) *</Label>
+            <Label htmlFor="price" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.price')}
+            </Label>
             <Input
               id="price"
               name="price"
               type="number"
               step="0.01"
               value={formData.price}
-              onChange={handleInputChange}
-              className={errors.price ? "border-red-500" : ""}
+              onChange={onInputChange}
+              className={cn(errors.price ? "border-red-500" : "", isArabic && "font-noto-kufi-arabic")}
               required
             />
             {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="match_at_price">Compare At Price (SAR)</Label>
+            <Label htmlFor="match_at_price" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.compareAtPrice')}
+            </Label>
             <Input
               id="match_at_price"
               name="match_at_price"
               type="number"
               step="0.01"
               value={formData.match_at_price}
-              onChange={handleInputChange}
-              className={errors.match_at_price ? "border-red-500" : ""}
+              onChange={onInputChange}
+              className={cn(errors.match_at_price ? "border-red-500" : "", isArabic && "font-noto-kufi-arabic")}
             />
           </div>
         </CardContent>
@@ -144,41 +165,59 @@ export const ProductFormFields = ({
       {/* Organization */}
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Organization</CardTitle>
+          <CardTitle className={cn("text-2xl", isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.addProduct.sections.organization')}
+          </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="product_type">Product Type *</Label>
+            <Label htmlFor="product_type" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.productType')}
+            </Label>
             <Select
               name="product_type"
               value={formData.product_type}
-              onValueChange={(value) => handleSelectChange("product_type", value)}
+              onValueChange={(value) => onSelectChange("product_type", value)}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select product type" />
+              <SelectTrigger className={cn(isArabic && "font-noto-kufi-arabic")}>
+                <SelectValue placeholder={t('admin.addProduct.placeholders.selectProductType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="men">Men</SelectItem>
-                <SelectItem value="women">Women</SelectItem>
+                <SelectItem value="men" className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.options.productType.men')}
+                </SelectItem>
+                <SelectItem value="women" className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.options.productType.women')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="collection">Collection *</Label>
+            <Label htmlFor="collection" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.collection')}
+            </Label>
             <Select
               name="collection"
               value={formData.collection}
-              onValueChange={(value) => handleSelectChange("collection", value)}
+              onValueChange={(value) => onSelectChange("collection", value)}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select collection" />
+              <SelectTrigger className={cn(isArabic && "font-noto-kufi-arabic")}>
+                <SelectValue placeholder={t('admin.addProduct.placeholders.selectCollection')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sneakers">Sneakers</SelectItem>
-                <SelectItem value="casual">Casual</SelectItem>
-                <SelectItem value="dress shoes">Dress Shoes</SelectItem>
-                <SelectItem value="sandals">Sandals and Slippers</SelectItem>
+                <SelectItem value="sneakers" className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.options.collection.sneakers')}
+                </SelectItem>
+                <SelectItem value="casual" className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.options.collection.casual')}
+                </SelectItem>
+                <SelectItem value="dress shoes" className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.options.collection.dressShoes')}
+                </SelectItem>
+                <SelectItem value="sandals" className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.options.collection.sandals')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -188,31 +227,37 @@ export const ProductFormFields = ({
       {/* Inventory */}
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Inventory</CardTitle>
+          <CardTitle className={cn("text-2xl", isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.addProduct.sections.inventory')}
+          </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="sku">SKU</Label>
+            <Label htmlFor="sku" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.sku')}
+            </Label>
             <Input
               id="sku"
               name="sku"
               value={formData.sku}
-              onChange={handleInputChange}
-              className={errors.sku ? "border-red-500" : ""}
+              onChange={onInputChange}
+              className={cn(errors.sku ? "border-red-500" : "", isArabic && "font-noto-kufi-arabic")}
+              required
             />
             {errors.sku && <p className="text-red-500 text-sm">{errors.sku}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity">Stock Quantity *</Label>
+            <Label htmlFor="quantity" className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.addProduct.fields.quantity')}
+            </Label>
             <Input
               id="quantity"
               name="quantity"
               type="number"
-              min="0"
               value={formData.quantity}
-              onChange={handleInputChange}
-              className={errors.quantity ? "border-red-500" : ""}
+              onChange={onInputChange}
+              className={cn(errors.quantity ? "border-red-500" : "", isArabic && "font-noto-kufi-arabic")}
               required
             />
             {errors.quantity && <p className="text-red-500 text-sm">{errors.quantity}</p>}
@@ -220,132 +265,121 @@ export const ProductFormFields = ({
         </CardContent>
       </Card>
 
-      {/* Product Variants */}
+      {/* Size Variants */}
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Product Variants</CardTitle>
+          <CardTitle className={cn("text-2xl", isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.addProduct.sections.sizeVariants')}
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8">
-          {/* Size Variants */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-lg font-semibold">Sizes</Label>
+        <CardContent className="space-y-4">
+          {formData.sizeVariants.map((variant, index) => (
+            <div key={index} className="flex items-end gap-4">
+              <div className="flex-1 space-y-2">
+                <Label className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.fields.size')}
+                </Label>
+                <Input
+                  value={variant.value}
+                  onChange={(e) => onVariantChange('size', index, e.target.value, 'value')}
+                  className={cn(isArabic && "font-noto-kufi-arabic")}
+                  placeholder={t('admin.addProduct.placeholders.enterSize')}
+                />
+              </div>
+              <div className="flex-1 space-y-2">
+                <Label className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.fields.stockQuantity')}
+                </Label>
+                <Input
+                  type="number"
+                  value={variant.stock_quantity}
+                  onChange={(e) => onVariantChange('size', index, e.target.value, 'stock_quantity')}
+                  className={cn(isArabic && "font-noto-kufi-arabic")}
+                  placeholder={t('admin.addProduct.placeholders.enterQuantity')}
+                />
+              </div>
               <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleAddVariant('size')}
+                variant="ghost"
+                size="icon"
+                onClick={() => onRemoveVariant('size', index)}
+                className="mb-2"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Size
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            <div className="space-y-4">
-              {formData.sizeVariants.map((variant, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start bg-gray-50 p-4 rounded-lg">
-                  <div className="space-y-2">
-                    <Label>Size Number</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.5"
-                      placeholder="e.g. 42"
-                      value={variant.value}
-                      onChange={(e) => handleVariantChange('size', index, e.target.value, 'value')}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Stock</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      placeholder="Stock quantity"
-                      value={variant.stock_quantity}
-                      onChange={(e) => handleVariantChange('size', index, e.target.value, 'stock_quantity')}
-                    />
-                  </div>
-                  <div className="flex items-end space-x-2">
-                    <div className="flex-1 space-y-2">
-                      <Label>SKU</Label>
-                      <Input
-                        placeholder="Variant SKU"
-                        value={variant.sku}
-                        onChange={(e) => handleVariantChange('size', index, e.target.value, 'sku')}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="self-end"
-                      onClick={() => handleRemoveVariant('size', index)}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onAddVariant('size')}
+            className={cn("mt-2", isArabic && "font-noto-kufi-arabic")}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {t('admin.addProduct.buttons.addSize')}
+          </Button>
+          {errors.sizeVariants && (
+            <p className="text-red-500 text-sm mt-2">{errors.sizeVariants}</p>
+          )}
+        </CardContent>
+      </Card>
 
-          {/* Color Variants */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-lg font-semibold">Colors</Label>
+      {/* Color Variants */}
+      <Card>
+        <CardHeader className="space-y-1">
+          <CardTitle className={cn("text-2xl", isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.addProduct.sections.colorVariants')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {formData.colorVariants.map((variant, index) => (
+            <div key={index} className="flex items-end gap-4">
+              <div className="flex-1 space-y-2">
+                <Label className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.fields.color')}
+                </Label>
+                <Input
+                  value={variant.value}
+                  onChange={(e) => onVariantChange('color', index, e.target.value, 'value')}
+                  className={cn(isArabic && "font-noto-kufi-arabic")}
+                  placeholder={t('admin.addProduct.placeholders.enterColor')}
+                />
+              </div>
+              <div className="flex-1 space-y-2">
+                <Label className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.addProduct.fields.stockQuantity')}
+                </Label>
+                <Input
+                  type="number"
+                  value={variant.stock_quantity}
+                  onChange={(e) => onVariantChange('color', index, e.target.value, 'stock_quantity')}
+                  className={cn(isArabic && "font-noto-kufi-arabic")}
+                  placeholder={t('admin.addProduct.placeholders.enterQuantity')}
+                />
+              </div>
               <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleAddVariant('color')}
+                variant="ghost"
+                size="icon"
+                onClick={() => onRemoveVariant('color', index)}
+                className="mb-2"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Color
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            <div className="space-y-4">
-              {formData.colorVariants.map((variant, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start bg-gray-50 p-4 rounded-lg">
-                  <div className="space-y-2">
-                    <Label>Color Name</Label>
-                    <Input
-                      placeholder="e.g. Black"
-                      value={variant.value}
-                      onChange={(e) => handleVariantChange('color', index, e.target.value, 'value')}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Stock</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      placeholder="Stock quantity"
-                      value={variant.stock_quantity}
-                      onChange={(e) => handleVariantChange('color', index, e.target.value, 'stock_quantity')}
-                    />
-                  </div>
-                  <div className="flex items-end space-x-2">
-                    <div className="flex-1 space-y-2">
-                      <Label>SKU</Label>
-                      <Input
-                        placeholder="Variant SKU"
-                        value={variant.sku}
-                        onChange={(e) => handleVariantChange('color', index, e.target.value, 'sku')}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="self-end"
-                      onClick={() => handleRemoveVariant('color', index)}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onAddVariant('color')}
+            className={cn("mt-2", isArabic && "font-noto-kufi-arabic")}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {t('admin.addProduct.buttons.addColor')}
+          </Button>
+          {errors.colorVariants && (
+            <p className="text-red-500 text-sm mt-2">{errors.colorVariants}</p>
+          )}
         </CardContent>
       </Card>
     </div>

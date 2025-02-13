@@ -1,89 +1,27 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 import { ProductFormFields } from "./product/ProductFormFields";
 import { ProductImagesSection } from "./product/ProductImagesSection";
-import { validateProductForm, uploadProductImages } from "./utils/product-form-utils";
-import { ProductResponse, EditProductFormProps, ProductImage, VariantOption } from "./types/product-form";
-import { SupabaseClient } from "@supabase/supabase-js";
-import type { Database as GeneratedDatabase } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
+import { ProductFormData, VariantOption } from "./types/product-form";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
-type ExtendedDatabase = GeneratedDatabase & {
-  public: {
-    Tables: {
-      products: {
-        Row: {
-          id: string;
-          name: string;
-          name_arabic: string;
-          price: number;
-          match_at_price: number | null;
-          product_type: string;
-          quantity: number;
-          sku: string;
-          collection: string;
-          product_description: string;
-          product_description_arabic: string;
-          status: string;
-          product_images: {
-            id: string;
-            url: string;
-            filename: string;
-            original_filename: string;
-            size_bytes: number;
-            mime_type: string;
-            position: number;
-            is_thumbnail: boolean;
-            product_id: string;
-          }[];
-          product_variants: {
-            id: string;
-            variant_type: string;
-            variant_value: string;
-            stock_quantity: number;
-            variant_sku: string;
-          }[];
-        };
-      };
-    } & GeneratedDatabase["public"]["Tables"];
-  };
-};
-
-interface ProductFormData {
-  name: string;
-  name_arabic: string;
-  price: string;
-  match_at_price: string;
-  product_type: string;
-  quantity: string;
-  sku: string;
-  collection: string;
-  product_description: string;
-  product_description_arabic: string;
-  status: string;
-  title: string;
-  sizeVariants: VariantOption[];
-  colorVariants: VariantOption[];
+interface EditProductFormProps {
+  productId: string;
+  onSuccess?: () => void;
 }
 
-interface ProductVariant {
-  id: string;
-  variant_type: string;
-  variant_value: string;
-  stock_quantity: number;
-  variant_sku: string;
-}
-
-const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
-  const { productId } = useParams();
+const EditProductForm = ({ productId, onSuccess }: EditProductFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     name_arabic: "",
@@ -95,13 +33,12 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
     collection: "casual",
     product_description: "",
     product_description_arabic: "",
-    status: "published",
-    title: "",
     sizeVariants: [],
     colorVariants: [],
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const fetchProductData = useCallback(async () => {
+  const fetchProductData = async () => {
     try {
       const supabaseTyped = supabase as unknown as SupabaseClient<ExtendedDatabase>;
       const { data, error } = await supabaseTyped
@@ -200,8 +137,6 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
           collection: typedProduct.collection,
           product_description: typedProduct.product_description,
           product_description_arabic: typedProduct.product_description_arabic,
-          status: typedProduct.status,
-          title: typedProduct.name,
           sizeVariants: variants
             .filter(v => v.variant_type === 'size')
             .map(v => ({
@@ -217,24 +152,22 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
               sku: v.variant_sku
             }))
         });
-
-        setExistingImages(typedProduct.product_images);
       }
     } catch (error) {
       console.error("Error fetching product:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch product details",
+        title: t('admin.editProduct.toast.error'),
+        description: t('admin.editProduct.toast.errorDescription'),
         variant: "destructive",
       });
     }
-  }, [productId, toast]);
+  };
 
   useEffect(() => {
     if (productId) {
       void fetchProductData();
     }
-  }, [productId, fetchProductData]);
+  }, [productId]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -295,15 +228,13 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const validationErrors = validateProductForm(formData, selectedImages, existingImages);
+  const handleSubmit = async () => {
+    const validationErrors = validateProductForm(formData, selectedImages);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields correctly.",
+        title: t('admin.editProduct.toast.error'),
+        description: t('admin.editProduct.toast.errorDescription'),
         variant: "destructive",
       });
       return;
@@ -382,14 +313,14 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
       }
 
       if (selectedImages.length > 0) {
-        await uploadProductImages(productId!, selectedImages, existingImages);
+        await uploadProductImages(productId!, selectedImages);
       }
 
       await fetchProductData();
 
       toast({
-        title: "Success",
-        description: "Product updated successfully.",
+        title: t('admin.editProduct.toast.success'),
+        description: t('admin.editProduct.toast.successDescription'),
       });
 
       if (onSuccess) {
@@ -400,8 +331,8 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
     } catch (error) {
       console.error('Error updating product:', error);
       toast({
-        title: "Error",
-        description: "Failed to update product. Please try again.",
+        title: t('admin.editProduct.toast.error'),
+        description: t('admin.editProduct.toast.errorDescription'),
         variant: "destructive",
       });
     } finally {
@@ -410,43 +341,55 @@ const EditProductForm = ({ onSuccess }: EditProductFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto p-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Edit Product</h2>
-        <p className="text-gray-500">Fields marked with * are required.</p>
+    <div className="max-w-5xl mx-auto">
+      <div className="flex justify-between items-center mb-6 px-6 pt-6">
+        <h1 className={cn(
+          "text-3xl font-bold",
+          isArabic && "font-noto-kufi-arabic"
+        )}>
+          {t('admin.editProduct.title')}
+        </h1>
+        <div className="space-x-2 rtl:space-x-reverse">
+          <Button
+            variant="outline"
+            onClick={() => navigate(-1)}
+            className={cn(isArabic && "font-noto-kufi-arabic")}
+          >
+            {t('admin.editProduct.buttons.cancel')}
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className={cn(isArabic && "font-noto-kufi-arabic")}
+          >
+            {t('admin.editProduct.buttons.save')}
+          </Button>
+        </div>
       </div>
 
-      <ProductFormFields
-        formData={formData}
-        errors={errors}
-        handleInputChange={handleInputChange}
-        handleSelectChange={handleSelectChange}
-        handleVariantChange={handleVariantChange}
-        handleAddVariant={handleAddVariant}
-        handleRemoveVariant={handleRemoveVariant}
-      />
+      <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+        <ProductFormFields
+          formData={formData}
+          errors={errors}
+          onInputChange={handleInputChange}
+          onSelectChange={handleSelectChange}
+          onVariantChange={handleVariantChange}
+          onAddVariant={handleAddVariant}
+          onRemoveVariant={handleRemoveVariant}
+        />
 
-      <ProductImagesSection
-        productId={productId!}
-        existingImages={existingImages}
-        setExistingImages={setExistingImages}
-        selectedImages={selectedImages}
-        setSelectedImages={setSelectedImages}
-      />
-
-      <div className="flex justify-end gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => navigate('/admin/products')}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Updating..." : "Update Product"}
-        </Button>
-      </div>
-    </form>
+        <div className="p-6">
+          <ProductImagesSection
+            selectedImages={selectedImages}
+            onImagesSelected={(images) => setSelectedImages(images)}
+            onRemoveImage={(image) => setSelectedImages(selectedImages.filter((img) => img !== image))}
+            error={errors.images}
+            title={t('admin.editProduct.fields.productImages')}
+            uploadButtonText={t('admin.editProduct.buttons.uploadImages')}
+          />
+        </div>
+      </form>
+    </div>
   );
 };
 

@@ -10,6 +10,7 @@ import LoadingSpinner from "./components/ui/loading-spinner";
 import EditProductForm from "./components/admin/EditProductForm";
 import { supabase } from "./integrations/supabase/client";
 import { useAuthStore } from "./store/useAuthStore";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 // Lazy load pages with error handling
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -150,6 +151,7 @@ const App = () => {
             <Footer />
             <Toaster />
             <Sonner />
+            <ScrollToTop />
           </div>
         </BrowserRouter>
       </TooltipProvider>

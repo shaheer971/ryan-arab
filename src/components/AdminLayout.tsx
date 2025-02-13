@@ -6,8 +6,6 @@ import {
   ShoppingCart,
   Users,
   Settings,
-  ChevronLeft,
-  ChevronRight,
   Palette,
   X,
 } from "lucide-react";
@@ -15,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface AdminLayoutProps {
   mobileMenuOpen: boolean;
@@ -25,6 +24,8 @@ const AdminLayout = ({ mobileMenuOpen, setMobileMenuOpen }: AdminLayoutProps) =>
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
   useEffect(() => {
     if (isMobile) {
@@ -33,13 +34,12 @@ const AdminLayout = ({ mobileMenuOpen, setMobileMenuOpen }: AdminLayoutProps) =>
   }, [location.pathname, isMobile, setMobileMenuOpen]);
 
   const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-    { icon: Package, label: "Products", path: "/admin/products" },
-    { icon: ShoppingCart, label: "Orders", path: "/admin/orders" },
-    { icon: Users, label: "Customers", path: "/admin/customers" },
-    { icon: Users, label: "Users", path: "/admin/users" },
-    { icon: Palette, label: "Website Editor", path: "/admin/website-editor" },
-    { icon: Settings, label: "Settings", path: "/admin/settings" },
+    { icon: LayoutDashboard, label: "dashboard", path: "/admin" },
+    { icon: Package, label: "products", path: "/admin/products" },
+    { icon: ShoppingCart, label: "orders", path: "/admin/orders" },
+    { icon: Users, label: "customers", path: "/admin/customers" },
+    { icon: Users, label: "users", path: "/admin/users" },
+    { icon: Palette, label: "websiteEditorMenu", path: "/admin/website-editor" },
   ];
 
   const AdminMenu = ({ onClose }: { onClose?: () => void }) => (
@@ -69,10 +69,11 @@ const AdminLayout = ({ mobileMenuOpen, setMobileMenuOpen }: AdminLayoutProps) =>
                 <span
                   className={cn(
                     "transition-all duration-300",
-                    isActive ? "text-current" : "text-gray-700"
+                    isActive ? "text-current" : "text-gray-700",
+                    isArabic && "font-noto-kufi-arabic"
                   )}
                 >
-                  {item.label}
+                  {t(`admin.${item.label}`)}
                 </span>
               )}
             </Link>
@@ -94,55 +95,64 @@ const AdminLayout = ({ mobileMenuOpen, setMobileMenuOpen }: AdminLayoutProps) =>
         isMobile && "fixed inset-y-0 left-0 z-50"
       )}
     >
-      {!isMobile && (
-        <Button
-          variant="secondary"
-          size="icon"
-          className="absolute -right-4 top-6 rounded-full bg-white shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 z-50"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4 text-gray-700" />
-          ) : (
-            <ChevronLeft className="h-4 w-4 text-gray-700" />
-          )}
-        </Button>
-      )}
-
       <div className="p-4">
         <motion.h2
           animate={{
             opacity: collapsed ? 0 : 1,
             transition: { duration: 0.2 }
           }}
-          className="font-jakarta text-xl font-bold pt-6 mb-10 bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent"
+          className={cn(
+            "text-xl font-semibold mb-6 truncate",
+            isArabic && "font-noto-kufi-arabic"
+          )}
         >
-          Admin Panel
+          {t('admin.adminPanel')}
         </motion.h2>
-        <AdminMenu onClose={() => setMobileMenuOpen(false)} />
+        <AdminMenu />
       </div>
     </motion.aside>
   );
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Show sidebar based on screen size and menu state */}
-      {(!isMobile || (isMobile && mobileMenuOpen)) && <Sidebar />}
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="animate-fade-in">
-          <Outlet />
-        </div>
-      </main>
-
-      {/* Overlay for mobile menu */}
-      {isMobile && mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-          onClick={() => setMobileMenuOpen(false)}
-        />
+    <div className="flex min-h-screen">
+      {isMobile ? (
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/20 z-40"
+                onClick={() => setMobileMenuOpen(false)}
+              />
+              <motion.div
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ duration: 0.2 }}
+                className="relative z-50"
+              >
+                <Sidebar />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-4 -right-12 bg-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      ) : (
+        <Sidebar />
       )}
+      <main className="flex-1 bg-gray-50/50">
+        <Outlet />
+      </main>
     </div>
   );
 };

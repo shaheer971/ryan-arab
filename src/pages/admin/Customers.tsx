@@ -9,9 +9,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
   // Mock data - in a real app, this would come from an API
   const customers = [
@@ -37,41 +41,72 @@ const Customers = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Customers</h1>
-        <Button>Export Customers</Button>
+        <div>
+          <h1 className={cn("text-3xl font-bold", isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.customersPage.title')}
+          </h1>
+          <p className={cn("text-gray-500 mt-1", isArabic && "font-noto-kufi-arabic")}>
+            {t('admin.customersPage.subtitle')}
+          </p>
+        </div>
+        <Button className={cn(isArabic && "font-noto-kufi-arabic")}>
+          {t('admin.customersPage.exportCustomers')}
+        </Button>
       </div>
 
       <div className="flex gap-4 items-center">
         <Input
-          placeholder="Search customers..."
+          placeholder={t('admin.customersPage.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className={cn("max-w-sm", isArabic && "font-noto-kufi-arabic")}
         />
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Orders</TableHead>
-            <TableHead>Total Spent</TableHead>
-            <TableHead>Last Order</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.customersPage.table.name')}
+            </TableHead>
+            <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.customersPage.table.email')}
+            </TableHead>
+            <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.customersPage.table.orders')}
+            </TableHead>
+            <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.customersPage.table.totalSpent')}
+            </TableHead>
+            <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.customersPage.table.lastOrder')}
+            </TableHead>
+            <TableHead className={cn(isArabic && "font-noto-kufi-arabic")}>
+              {t('admin.customersPage.table.actions')}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {customers.map((customer) => (
             <TableRow key={customer.id}>
-              <TableCell>{customer.name}</TableCell>
-              <TableCell>{customer.email}</TableCell>
-              <TableCell>{customer.orders}</TableCell>
-              <TableCell>${customer.totalSpent}</TableCell>
-              <TableCell>{customer.lastOrder}</TableCell>
+              <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {customer.name}
+              </TableCell>
+              <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {customer.email}
+              </TableCell>
+              <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {customer.orders}
+              </TableCell>
+              <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                ${customer.totalSpent}
+              </TableCell>
+              <TableCell className={cn(isArabic && "font-noto-kufi-arabic")}>
+                {customer.lastOrder}
+              </TableCell>
               <TableCell>
-                <Button variant="ghost" size="sm">
-                  View Profile
+                <Button variant="ghost" size="sm" className={cn(isArabic && "font-noto-kufi-arabic")}>
+                  {t('admin.customersPage.actions.viewProfile')}
                 </Button>
               </TableCell>
             </TableRow>

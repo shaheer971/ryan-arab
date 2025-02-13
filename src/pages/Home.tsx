@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { InfiniteProductScroll } from "@/components/InfiniteProductScroll";
 
 const Home = () => {
   const isMobile = useIsMobile();
@@ -131,7 +132,7 @@ const Home = () => {
       </section>
 
       {/* Categories Section */}
-      <section className="py-24 px-4 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-24 px-2 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto">
           <motion.h2 
             {...fadeInUp}
@@ -139,7 +140,7 @@ const Home = () => {
           >
             Shop by Category
           </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {categories.map((category) => (
               <motion.div
                 key={category.title}
@@ -186,7 +187,7 @@ const Home = () => {
       </section>
 
       {/* Sale Products Section */}
-      <section className="py-24 px-4 gradient-premium">
+      <section className="py-24 px-4 gradient-premium overflow-hidden">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between items-center mb-12">
             <motion.div {...fadeInUp} className="max-w-2xl text-center md:text-left">
@@ -200,86 +201,55 @@ const Home = () => {
             </motion.div>
             <Button
               asChild
-              variant="default"
-              className="hidden md:flex bg-primary text-white hover:bg-primary/90"
+              variant="outline"
+              className="group"
             >
-              <Link to="/sale" className="group">
-                View All Sales
-                <ArrowRight className="ml-2 h-4 w-6 transition-transform group-hover:translate-x-1" />
+              <Link to="/sale">
+                View All
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
           </div>
-          
           {isLoadingSale ? (
-            <div className="flex justify-center">
+            <div className="flex justify-center py-12">
               <LoadingSpinner />
             </div>
-          ) : saleProducts && saleProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {saleProducts.map((product) => (
-                <motion.div key={product.id} {...fadeInUp}>
-                  <ProductCard
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    match_at_price={product.match_at_price}
-                    product_images={product.product_images}
-                    slug={product.slug}
-                    category={product.product_type}
-                  />
-                </motion.div>
-              ))}
-            </div>
           ) : (
-            <p className="text-center text-gray-500">No sale products available</p>
+            <InfiniteProductScroll products={saleProducts || []} />
           )}
-          
-          <div className="md:hidden mt-8 text-center">
-            <Button
-              asChild
-              variant="default"
-              className="bg-primary text-white hover:bg-primary/90"
-            >
-              <Link to="/sale" className="group">
-                View All Sales
-                <ArrowRight className="ml-2 h-4 w-6 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-          </div>
         </div>
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-24 px-4">
+      <section className="py-24 px-4 bg-white overflow-hidden">
         <div className="container mx-auto">
-          <motion.h2 
-            {...fadeInUp}
-            className="font-jakarta text-3xl md:text-4xl font-bold text-center mb-12"
-          >
-            Featured Products
-          </motion.h2>
+          <div className="flex flex-col md:flex-row md:justify-between items-center mb-12">
+            <motion.div {...fadeInUp} className="max-w-2xl text-center md:text-left">
+              <span className="text-primary font-medium mb-2 block">Handpicked Collection</span>
+              <h2 className="font-jakarta text-3xl md:text-4xl font-bold mb-4">
+                Featured Products
+              </h2>
+              <p className="text-gray-600 mb-4 md:mb-0">
+                Explore our curated selection of premium footwear.
+              </p>
+            </motion.div>
+            <Button
+              asChild
+              variant="outline"
+              className="group"
+            >
+              <Link to="/featured">
+                View All
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+          </div>
           {isLoadingFeatured ? (
-            <div className="flex justify-center">
+            <div className="flex justify-center py-12">
               <LoadingSpinner />
             </div>
-          ) : featuredProducts && featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {featuredProducts.map((product) => (
-                <motion.div key={product.id} {...fadeInUp}>
-                  <ProductCard
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    match_at_price={product.match_at_price}
-                    product_images={product.product_images}
-                    slug={product.slug}
-                    category={product.product_type}
-                  />
-                </motion.div>
-              ))}
-            </div>
           ) : (
-            <p className="text-center text-gray-500">No featured products available</p>
+            <InfiniteProductScroll products={featuredProducts || []} />
           )}
         </div>
       </section>

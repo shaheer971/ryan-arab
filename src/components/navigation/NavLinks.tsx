@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface NavLinksProps {
   onLinkClick?: () => void;
@@ -8,14 +9,15 @@ interface NavLinksProps {
 
 const NavLinks = ({ onLinkClick }: NavLinksProps) => {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
   const navItems = [
-    { path: "/", label: t('navigation.home') },
-    { path: "/mens", label: t('navigation.men') },
-    { path: "/womens", label: t('navigation.women') },
-    { path: "/about", label: t('navigation.about') },
-    { path: "/contact", label: t('navigation.contact') },
+    { path: "/", key: "home" },
+    { path: "/mens", key: "men" },
+    { path: "/womens", key: "women" },
+    { path: "/about", key: "about" },
+    { path: "/contact", key: "contact" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -30,13 +32,15 @@ const NavLinks = ({ onLinkClick }: NavLinksProps) => {
           onClick={onLinkClick}
         >
           <span
-            className={`font-jakarta text-base font-medium transition-colors ${
+            className={cn(
+              "font-jakarta text-base font-medium transition-colors",
               isActive(item.path)
                 ? "text-primary"
-                : "text-gray-700 hover:text-primary"
-            }`}
+                : "text-gray-700 hover:text-primary",
+              isArabic && "font-noto-kufi-arabic"
+            )}
           >
-            {item.label}
+            {t(`navigation.${item.key}`)}
           </span>
           {isActive(item.path) && (
             <motion.div

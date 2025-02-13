@@ -22,6 +22,7 @@ const config = {
         sans: ["Plus Jakarta Sans", "sans-serif"],
         satoshi: ["Satoshi", "sans-serif"],
         jakarta: ["Plus Jakarta Sans", "sans-serif"],
+        "noto-kufi-arabic": ["Noto Kufi Arabic", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

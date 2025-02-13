@@ -1,141 +1,81 @@
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Upload, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { ProductImage, ProductImagesSectionProps } from "../types/product-form";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
+
+interface ProductImagesSectionProps {
+  selectedImages: File[];
+  onImagesSelected: (images: File[]) => void;
+  onRemoveImage: (index: number) => void;
+  error?: string;
+  title: string;
+  uploadButtonText: string;
+}
 
 export const ProductImagesSection = ({
-  productId,
-  existingImages = [],
-  setExistingImages,
   selectedImages,
-  setSelectedImages,
-  error
+  onImagesSelected,
+  onRemoveImage,
+  error,
+  title,
+  uploadButtonText
 }: ProductImagesSectionProps) => {
-  const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newImages = Array.from(files);
-      setSelectedImages([...selectedImages, ...newImages]);
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setSelectedImages(selectedImages.filter((_, i) => i !== index));
-  };
-
-  const removeExistingImage = async (imageId: string) => {
-    if (!setExistingImages || !productId) return;
-
-    try {
-      const imageToDelete = existingImages.find(img => img.id === imageId);
-      if (!imageToDelete) return;
-
-      const filename = imageToDelete.url.split('/').pop();
-      if (filename) {
-        const { error: storageError } = await supabase.storage
-          .from('product-images')
-          .remove([`${productId}/${filename}`]);
-
-        if (storageError) throw storageError;
-      }
-
-      const { error: dbError } = await supabase
-        .from('product_images')
-        .delete()
-        .eq('id', imageId);
-
-      if (dbError) throw dbError;
-
-      setExistingImages(existingImages.filter(img => img.id !== imageId));
-      
-      toast({
-        title: "Success",
-        description: "Image removed successfully",
-      });
-    } catch (error) {
-      console.error('Error removing image:', error);
-      toast({
-        title: "Error",
-        description: "Failed to remove image. Please try again.",
-        variant: "destructive",
-      });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      onImagesSelected(files);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label>Product Images {!productId && '*'}</Label>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => document.getElementById('image-upload')?.click()}
-        >
-          <Upload className="w-4 h-4 mr-2" />
-          Upload Images
-        </Button>
-        <Input
-          id="image-upload"
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleImageChange}
-        />
-      </div>
-
-      <div className="space-y-6">
-        {existingImages.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {existingImages.map((image: ProductImage) => (
-              <div key={image.id} className="relative group">
-                <img
-                  src={image.url}
-                  alt="Product"
-                  className="w-full h-32 object-cover rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeExistingImage(image.id)}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+    <Card>
+      <CardHeader className="space-y-1">
+        <CardTitle className={cn("text-2xl", isArabic && "font-noto-kufi-arabic")}>
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {selectedImages.map((file, index) => (
+            <div key={index} className="relative group">
+              <img
+                src={URL.createObjectURL(file)}
+                alt={`Product ${index + 1}`}
+                className="w-full h-32 object-cover rounded-lg"
+              />
+              <button
+                onClick={() => onRemoveImage(index)}
+                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+          <div className="flex items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg">
+            <Button
+              variant="ghost"
+              className={cn("flex flex-col items-center gap-2", isArabic && "font-noto-kufi-arabic")}
+              onClick={() => document.getElementById('image-upload')?.click()}
+            >
+              <Upload className="h-6 w-6" />
+              <span>{uploadButtonText}</span>
+            </Button>
+            <input
+              type="file"
+              id="image-upload"
+              multiple
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
           </div>
-        )}
-
-        {selectedImages.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {selectedImages.map((file, index) => (
-              <div key={index} className="relative group">
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt={`Preview ${index + 1}`}
-                  className="w-full h-32 object-cover rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-      </div>
-    </div>
+        </div>
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      </CardContent>
+    </Card>
   );
 };

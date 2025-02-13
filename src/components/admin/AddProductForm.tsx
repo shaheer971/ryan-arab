@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { ProductFormData, VariantOption } from "./types/product-form";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface AddProductFormProps {
   onSuccess?: () => void;
@@ -25,6 +27,8 @@ const generateSlug = (name: string) => {
 const AddProductForm = ({ onSuccess }: AddProductFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [formData, setFormData] = useState<ProductFormData>({
@@ -46,43 +50,43 @@ const AddProductForm = ({ onSuccess }: AddProductFormProps) => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.name.trim()) newErrors.name = "Product name is required";
-    if (!formData.name_arabic.trim()) newErrors.name_arabic = "Product name in Arabic is required";
+    if (!formData.name.trim()) newErrors.name = t('admin.addProduct.errors.nameRequired');
+    if (!formData.name_arabic.trim()) newErrors.name_arabic = t('admin.addProduct.errors.nameArabicRequired');
     if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
-      newErrors.price = "Valid price is required";
+      newErrors.price = t('admin.addProduct.errors.validPriceRequired');
     }
     if (!formData.quantity || isNaN(Number(formData.quantity)) || Number(formData.quantity) < 0) {
-      newErrors.quantity = "Valid quantity is required";
+      newErrors.quantity = t('admin.addProduct.errors.validQuantityRequired');
     }
     if (!formData.product_description.trim()) {
-      newErrors.product_description = "Product description is required";
+      newErrors.product_description = t('admin.addProduct.errors.descriptionRequired');
     }
     if (!formData.product_description_arabic.trim()) {
-      newErrors.product_description_arabic = "Product description in Arabic is required";
+      newErrors.product_description_arabic = t('admin.addProduct.errors.descriptionArabicRequired');
     }
     if (selectedImages.length === 0) {
-      newErrors.images = "At least one product image is required";
+      newErrors.images = t('admin.addProduct.errors.imageRequired');
     }
     if (!formData.sku.trim()) {
-      newErrors.sku = "SKU is required";
+      newErrors.sku = t('admin.addProduct.errors.skuRequired');
     }
 
     // Validate variants
     if (formData.sizeVariants.length === 0) {
-      newErrors.sizeVariants = "At least one size variant is required";
+      newErrors.sizeVariants = t('admin.addProduct.errors.sizeVariantRequired');
     } else {
       const invalidSizes = formData.sizeVariants.some(v => !v.value || !v.stock_quantity);
       if (invalidSizes) {
-        newErrors.sizeVariants = "All size variants must have a size number and stock quantity";
+        newErrors.sizeVariants = t('admin.addProduct.errors.invalidSizeVariants');
       }
     }
 
     if (formData.colorVariants.length === 0) {
-      newErrors.colorVariants = "At least one color variant is required";
+      newErrors.colorVariants = t('admin.addProduct.errors.colorVariantRequired');
     } else {
       const invalidColors = formData.colorVariants.some(v => !v.value || !v.stock_quantity);
       if (invalidColors) {
-        newErrors.colorVariants = "All color variants must have a color name and stock quantity";
+        newErrors.colorVariants = t('admin.addProduct.errors.invalidColorVariants');
       }
     }
 
@@ -168,12 +172,11 @@ const AddProductForm = ({ onSuccess }: AddProductFormProps) => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!validateForm()) {
       toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields correctly.",
+        title: t('admin.addProduct.toast.validationError'),
+        description: t('admin.addProduct.toast.fillRequiredFields'),
         variant: "destructive",
       });
       return;
@@ -185,11 +188,11 @@ const AddProductForm = ({ onSuccess }: AddProductFormProps) => {
       const isSkuUnique = await validateSku(formData.sku.trim());
       if (!isSkuUnique) {
         toast({
-          title: "Error",
-          description: "This SKU already exists. Please use a unique SKU.",
+          title: t('admin.addProduct.toast.error'),
+          description: t('admin.addProduct.toast.skuExists'),
           variant: "destructive",
         });
-        setErrors(prev => ({ ...prev, sku: "This SKU already exists" }));
+        setErrors(prev => ({ ...prev, sku: t('admin.addProduct.errors.skuExists') }));
         return;
       }
 
@@ -210,108 +213,86 @@ const AddProductForm = ({ onSuccess }: AddProductFormProps) => {
             quantity: Number(formData.quantity),
             sku: formData.sku.trim(),
             collection: formData.collection,
+            status: "draft",
             product_description: formData.product_description.trim(),
             product_description_arabic: formData.product_description_arabic.trim(),
-            status: 'published',
-            inventory_count: Number(formData.quantity),
-            title: formData.name.trim(),
           },
         ])
         .select()
         .single();
 
-      if (productError) {
-        console.error('Product creation error:', productError);
-        throw new Error(productError.message);
-      }
-
-      if (!productData) {
-        throw new Error('Failed to create product');
-      }
-
-      // Insert variants
-      if (formData.sizeVariants.length > 0) {
-        const sizeVariants = formData.sizeVariants.map((variant) => ({
-          product_id: productData.id,
-          variant_type: 'size',
-          variant_value: variant.value,
-          stock_quantity: Number(variant.stock_quantity),
-          variant_sku: variant.sku || `${productData.sku}-${variant.value.toLowerCase()}`,
-        }));
-
-        const { error: sizeError } = await supabase
-          .from("product_variants")
-          .insert(sizeVariants);
-
-        if (sizeError) {
-          console.error('Size variant error:', sizeError);
-          throw new Error(sizeError.message);
-        }
-      }
-
-      if (formData.colorVariants.length > 0) {
-        const colorVariants = formData.colorVariants.map((variant) => ({
-          product_id: productData.id,
-          variant_type: 'color',
-          variant_value: variant.value,
-          stock_quantity: Number(variant.stock_quantity),
-          variant_sku: variant.sku || `${productData.sku}-${variant.value.toLowerCase()}`,
-        }));
-
-        const { error: colorError } = await supabase
-          .from("product_variants")
-          .insert(colorVariants);
-
-        if (colorError) {
-          console.error('Color variant error:', colorError);
-          throw new Error(colorError.message);
-        }
-      }
+      if (productError) throw productError;
+      if (!productData) throw new Error(t('admin.addProduct.errors.productCreateFailed'));
 
       // Upload images
-      for (const [index, file] of selectedImages.entries()) {
+      const imagePromises = selectedImages.map(async (file, index) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${productData.id}-${index}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(fileName, file);
+        const filePath = `product-images/${fileName}`;
 
-        if (uploadError) throw new Error(uploadError.message);
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(fileName);
+          .from('products')
+          .getPublicUrl(filePath);
 
-        const { error: imageError } = await supabase
-          .from('product_images')
-          .insert([
-            {
-              product_id: productData.id,
-              url: publicUrl,
-              filename: fileName,
-              original_filename: file.name,
-              size_bytes: file.size,
-              mime_type: file.type,
-              position: index,
-              is_thumbnail: index === 0,
-            },
-          ]);
+        return {
+          product_id: productData.id,
+          url: publicUrl,
+          is_thumbnail: index === 0,
+          position: index,
+        };
+      });
 
-        if (imageError) throw new Error(imageError.message);
-      }
+      const imageResults = await Promise.all(imagePromises);
+
+      // Insert image records
+      const { error: imagesError } = await supabase
+        .from('product_images')
+        .insert(imageResults);
+
+      if (imagesError) throw imagesError;
+
+      // Insert variants
+      const variants = [
+        ...formData.sizeVariants.map((v, i) => ({
+          product_id: productData.id,
+          variant_type: 'size' as const,
+          variant_value: v.value,
+          stock_quantity: v.stock_quantity,
+          variant_sku: `${formData.sku}-S${i + 1}`,
+        })),
+        ...formData.colorVariants.map((v, i) => ({
+          product_id: productData.id,
+          variant_type: 'color' as const,
+          variant_value: v.value,
+          stock_quantity: v.stock_quantity,
+          variant_sku: `${formData.sku}-C${i + 1}`,
+        })),
+      ];
+
+      const { error: variantsError } = await supabase
+        .from('product_variants')
+        .insert(variants);
+
+      if (variantsError) throw variantsError;
 
       toast({
-        title: "Success",
-        description: "Product added successfully",
+        title: t('admin.addProduct.toast.success'),
+        description: t('admin.addProduct.toast.productCreated'),
       });
 
       onSuccess?.();
-      navigate("/admin/products");
+      navigate('/admin/products');
     } catch (error) {
-      console.error("Error adding product:", error);
+      console.error('Error creating product:', error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add product. Please try again.",
+        title: t('admin.addProduct.toast.error'),
+        description: t('admin.addProduct.toast.createError'),
         variant: "destructive",
       });
     } finally {
@@ -320,40 +301,55 @@ const AddProductForm = ({ onSuccess }: AddProductFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-7xl mx-auto p-6 space-y-8">
-      <div className="flex items-center justify-between border-b pb-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Add New Product</h1>
-          <p className="text-gray-500 mt-1">Create a new product with variants</p>
+    <div className="max-w-5xl mx-auto">
+      <div className="flex justify-between items-center mb-6 px-6 pt-6">
+        <h1 className={cn(
+          "text-3xl font-bold",
+          isArabic && "font-noto-kufi-arabic"
+        )}>
+          {t('admin.addProduct.title')}
+        </h1>
+        <div className="space-x-2 rtl:space-x-reverse">
+          <Button
+            variant="outline"
+            onClick={() => navigate(-1)}
+            className={cn(isArabic && "font-noto-kufi-arabic")}
+          >
+            {t('admin.addProduct.buttons.cancel')}
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className={cn(isArabic && "font-noto-kufi-arabic")}
+          >
+            {t('admin.addProduct.buttons.create')}
+          </Button>
         </div>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Upload className="mr-2 h-4 w-4 animate-spin" />
-              Adding Product...
-            </>
-          ) : (
-            "Add Product"
-          )}
-        </Button>
       </div>
 
-      <ProductFormFields
-        formData={formData}
-        errors={errors}
-        handleInputChange={handleInputChange}
-        handleSelectChange={handleSelectChange}
-        handleVariantChange={handleVariantChange}
-        handleAddVariant={handleAddVariant}
-        handleRemoveVariant={handleRemoveVariant}
-      />
+      <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+        <ProductFormFields
+          formData={formData}
+          errors={errors}
+          onInputChange={handleInputChange}
+          onSelectChange={handleSelectChange}
+          onVariantChange={handleVariantChange}
+          onAddVariant={handleAddVariant}
+          onRemoveVariant={handleRemoveVariant}
+        />
 
-      <ProductImagesSection
-        selectedImages={selectedImages}
-        setSelectedImages={setSelectedImages}
-        error={errors.images}
-      />
-    </form>
+        <div className="p-6">
+          <ProductImagesSection
+            selectedImages={selectedImages}
+            onImagesSelected={(images) => setSelectedImages(images)}
+            onRemoveImage={(index) => setSelectedImages(selectedImages.filter((_, i) => i !== index))}
+            error={errors.images}
+            title={t('admin.addProduct.fields.productImages')}
+            uploadButtonText={t('admin.addProduct.buttons.uploadImages')}
+          />
+        </div>
+      </form>
+    </div>
   );
 };
 

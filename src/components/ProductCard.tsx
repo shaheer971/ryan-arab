@@ -11,6 +11,7 @@ import {
 import { motion } from "framer-motion";
 
 interface ProductImage {
+  id: string;
   url: string;
   is_thumbnail: boolean;
 }
@@ -20,10 +21,14 @@ interface ProductCardProps {
   slug: string;
   name: string;
   price: number;
-  match_at_price?: number;
-  product_images?: ProductImage[];
-  category?: string;
+  match_at_price: number | null;
+  product_images: ProductImage[];
+  category: string;
   tags?: string[];
+  hideAddToCart?: boolean;
+  onActionClick?: () => void;
+  actionLabel?: string;
+  actionVariant?: "default" | "destructive" | "outline";
 }
 
 const ProductCard = ({
@@ -35,6 +40,10 @@ const ProductCard = ({
   product_images,
   category,
   tags = [],
+  hideAddToCart = false,
+  onActionClick,
+  actionLabel,
+  actionVariant = "default",
 }: ProductCardProps) => {
   const isOnSale = match_at_price && match_at_price > price;
   const discount = isOnSale ? Math.round(((match_at_price - price) / match_at_price) * 100) : undefined;
@@ -43,6 +52,10 @@ const ProductCard = ({
   const displayImage = product_images?.find(img => img.is_thumbnail)?.url || 
                       product_images?.[0]?.url ||
                       'https://via.placeholder.com/400x400?text=No+Image';
+
+  const handleAddToCart = () => {
+    // Add to cart logic here
+  };
 
   return (
     <motion.div
@@ -120,9 +133,32 @@ const ProductCard = ({
               </span>
             )}
           </div>
-          <Button size="sm" variant="outline" className="w-full">
-            Add to Cart
-          </Button>
+          <div className="mt-4 space-y-2">
+            {!hideAddToCart && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleAddToCart();
+                }}
+              >
+                Add to Cart
+              </Button>
+            )}
+            {onActionClick && actionLabel && (
+              <Button
+                variant={actionVariant}
+                className="w-full"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onActionClick();
+                }}
+              >
+                {actionLabel}
+              </Button>
+            )}
+          </div>
         </CardFooter>
       </Card>
     </motion.div>

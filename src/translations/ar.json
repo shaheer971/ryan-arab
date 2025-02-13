@@ -1,0 +1,430 @@
+{
+  "navigation": {
+    "home": "الرئيسية",
+    "men": "رجال",
+    "women": "نساء",
+    "about": "عن المتجر",
+    "contact": "اتصل بنا"
+  },
+  "auth": {
+    "login": {
+      "title": "مرحباً بعودتك",
+      "subtitle": "قم بتسجيل الدخول إلى حسابك للمتابعة"
+    },
+    "signup": {
+      "title": "إنشاء حساب",
+      "subtitle": "أنشئ حساباً جديداً للبدء"
+    },
+    "fields": {
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "phone": "رقم الهاتف",
+      "areaCode": "رمز المنطقة"
+    },
+    "placeholders": {
+      "phone": "أدخل رقم الهاتف"
+    },
+    "buttons": {
+      "login": "تسجيل الدخول",
+      "signup": "إنشاء حساب",
+      "createAccount": "ليس لديك حساب؟ أنشئ حساباً",
+      "haveAccount": "لديك حساب بالفعل؟ سجل دخولك"
+    },
+    "errors": {
+      "passwordsMismatch": "كلمات المرور غير متطابقة",
+      "passwordTooShort": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+      "requiredFields": "يرجى ملء جميع الحقول المطلوبة",
+      "invalidPhone": "يرجى إدخال رقم هاتف صحيح"
+    },
+    "toast": {
+      "adminLoginSuccess": "تم تسجيل دخول المشرف بنجاح",
+      "adminWelcome": "مرحباً بك في لوحة تحكم المشرف!",
+      "loginSuccess": "تم تسجيل الدخول بنجاح",
+      "welcome": "مرحباً بعودتك!",
+      "signupSuccess": "تم إنشاء الحساب",
+      "signupWelcome": "مرحباً بك في رايان عرب!"
+    }
+  },
+  "admin": {
+    "adminPanel": "لوحة الإدارة",
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "orders": "الطلبات",
+    "customers": "العملاء",
+    "users": "المستخدمين",
+    "websiteEditor": "محرر الموقع",
+    "websiteEditorMenu": "محرر الموقع",
+    "settings": "الإعدادات",
+    "websiteEditorPage": {
+      "title": "محرر الموقع",
+      "subtitle": "تخصيص محتوى الموقع",
+      "sections": {
+        "featured": "المنتجات المميزة",
+        "sale": "منتجات التخفيضات",
+        "categories": "الفئات"
+      },
+      "buttons": {
+        "addToFeatured": "إضافة إلى المميز",
+        "removeFromFeatured": "إزالة من المميز",
+        "addToSale": "إضافة إلى التخفيضات",
+        "removeFromSale": "إزالة من التخفيضات",
+        "save": "حفظ التغييرات"
+      },
+      "messages": {
+        "success": "تم حفظ التغييرات بنجاح",
+        "error": "حدث خطأ أثناء حفظ التغييرات"
+      }
+    },
+    "addProduct": {
+      "title": "إضافة منتج جديد",
+      "sections": {
+        "basicInfo": "المعلومات الأساسية",
+        "pricing": "التسعير",
+        "organization": "التنظيم",
+        "sizeVariants": "متغيرات المقاس",
+        "colorVariants": "متغيرات اللون",
+        "inventory": "المخزون"
+      },
+      "fields": {
+        "nameEnglish": "اسم المنتج (بالإنجليزية)",
+        "nameArabic": "اسم المنتج (بالعربية)",
+        "descriptionEnglish": "وصف المنتج (بالإنجليزية)",
+        "descriptionArabic": "وصف المنتج (بالعربية)",
+        "price": "السعر",
+        "compareAtPrice": "السعر المقارن",
+        "productType": "نوع المنتج",
+        "collection": "المجموعة",
+        "sku": "رمز المنتج (SKU)",
+        "quantity": "الكمية",
+        "size": "المقاس",
+        "color": "اللون",
+        "stockQuantity": "كمية المخزون",
+        "productImages": "صور المنتج"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "create": "إنشاء المنتج",
+        "addSize": "إضافة مقاس",
+        "addColor": "إضافة لون",
+        "removeVariant": "إزالة",
+        "uploadImages": "تحميل الصور"
+      },
+      "placeholders": {
+        "selectProductType": "اختر نوع المنتج",
+        "selectCollection": "اختر المجموعة",
+        "enterSize": "أدخل المقاس",
+        "enterColor": "أدخل اللون",
+        "enterQuantity": "أدخل الكمية"
+      },
+      "options": {
+        "productType": {
+          "men": "رجال",
+          "women": "نساء"
+        },
+        "collection": {
+          "casual": "عادي",
+          "formal": "رسمي",
+          "sport": "رياضي",
+          "traditional": "تقليدي"
+        }
+      },
+      "errors": {
+        "nameRequired": "اسم المنتج باللغة الإنجليزية مطلوب",
+        "nameArabicRequired": "اسم المنتج باللغة العربية مطلوب",
+        "validPriceRequired": "يرجى إدخال سعر صحيح",
+        "validQuantityRequired": "يرجى إدخال كمية صحيحة",
+        "descriptionRequired": "وصف المنتج باللغة الإنجليزية مطلوب",
+        "descriptionArabicRequired": "وصف المنتج باللغة العربية مطلوب",
+        "imageRequired": "يجب تحميل صورة واحدة على الأقل",
+        "skuRequired": "رمز المنتج مطلوب",
+        "skuExists": "رمز المنتج موجود بالفعل",
+        "sizeVariantRequired": "يجب إضافة مقاس واحد على الأقل",
+        "colorVariantRequired": "يجب إضافة لون واحد على الأقل",
+        "invalidSizeVariants": "يرجى إدخال جميع معلومات المقاسات",
+        "invalidColorVariants": "يرجى إدخال جميع معلومات الألوان"
+      },
+      "toast": {
+        "validationError": "خطأ في التحقق",
+        "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
+        "error": "حدث خطأ",
+        "skuExists": "رمز المنتج موجود بالفعل",
+        "success": "تم إضافة المنتج بنجاح",
+        "successDescription": "تمت إضافة المنتج وتحميل الصور بنجاح"
+      }
+    },
+    "editProduct": {
+      "title": "تعديل المنتج",
+      "sections": {
+        "basicInfo": "المعلومات الأساسية",
+        "pricing": "التسعير",
+        "organization": "التنظيم",
+        "variants": "المتغيرات",
+        "inventory": "المخزون",
+        "images": "الصور"
+      },
+      "fields": {
+        "nameEnglish": "اسم المنتج (بالإنجليزية)",
+        "nameArabic": "اسم المنتج (بالعربية)",
+        "descriptionEnglish": "وصف المنتج (بالإنجليزية)",
+        "descriptionArabic": "وصف المنتج (بالعربية)",
+        "price": "السعر",
+        "compareAtPrice": "السعر المقارن",
+        "productType": "نوع المنتج",
+        "collection": "المجموعة",
+        "sku": "رمز المنتج (SKU)",
+        "quantity": "الكمية",
+        "sizeVariants": "متغيرات المقاس",
+        "colorVariants": "متغيرات اللون",
+        "status": "الحالة"
+      },
+      "placeholders": {
+        "selectProductType": "اختر نوع المنتج",
+        "selectCollection": "اختر المجموعة",
+        "enterSize": "أدخل المقاس",
+        "enterColor": "أدخل اللون",
+        "enterQuantity": "أدخل الكمية"
+      },
+      "buttons": {
+        "addSize": "إضافة مقاس",
+        "addColor": "إضافة لون",
+        "removeVariant": "إزالة",
+        "uploadImages": "تحميل الصور",
+        "submit": "حفظ التغييرات",
+        "cancel": "إلغاء",
+        "save": "حفظ التغييرات"
+      },
+      "toast": {
+        "success": "تم تحديث المنتج بنجاح",
+        "successDescription": "تم تحديث المنتج وتحميل الصور بنجاح",
+        "error": "حدث خطأ",
+        "errorDescription": "حدث خطأ أثناء تحديث المنتج"
+      }
+    },
+    "websiteEditor": {
+      "title": "محرر الموقع",
+      "subtitle": "إدارة المنتجات المميزة والتخفيضات",
+      "sections": {
+        "featuredProducts": "المنتجات المميزة",
+        "saleProducts": "منتجات التخفيضات"
+      },
+      "addProducts": "إضافة منتجات",
+      "addToFeatured": "إضافة إلى المميز",
+      "removeFromFeatured": "إزالة من المميز",
+      "addToSale": "إضافة إلى التخفيضات",
+      "removeFromSale": "إزالة من التخفيضات",
+      "discount": "خصم {{percent}}%",
+      "productType": {
+        "men": "رجال",
+        "women": "نساء"
+      },
+      "price": {
+        "current": "{{price}} ريال",
+        "original": "{{originalPrice}} ريال"
+      }
+    },
+    "productsPage": {
+      "title": "المنتجات",
+      "subtitle": "إدارة المنتجات",
+      "addNew": "إضافة منتج جديد",
+      "searchPlaceholder": "البحث عن المنتجات...",
+      "status": {
+        "all": "جميع الحالات",
+        "draft": "مسودة",
+        "published": "منشور",
+        "archived": "مؤرشف"
+      },
+      "table": {
+        "image": "الصورة",
+        "productDetails": "تفاصيل المنتج",
+        "collection": "المجموعة",
+        "inventory": {
+          "title": "المخزون",
+          "total": "الإجمالي",
+          "available": "المتاح"
+        },
+        "price": "السعر",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "sections": {
+        "menProducts": "منتجات الرجال",
+        "womenProducts": "منتجات النساء"
+      },
+      "actions": {
+        "edit": "تعديل",
+        "delete": "حذف",
+        "cancel": "إلغاء"
+      },
+      "deleteDialog": {
+        "title": "هل أنت متأكد؟",
+        "description": "لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف المنتج وجميع البيانات المرتبطة به نهائيًا."
+      },
+      "loading": "جاري تحميل المنتجات..."
+    },
+    "ordersPage": {
+      "title": "الطلبات",
+      "subtitle": "إدارة طلبات العملاء",
+      "exportOrders": "تصدير الطلبات",
+      "searchPlaceholder": "البحث في الطلبات...",
+      "table": {
+        "orderId": "رقم الطلب",
+        "customer": "العميل",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "total": "المجموع",
+        "actions": "الإجراءات"
+      },
+      "status": {
+        "all": "الكل",
+        "pending": "قيد الانتظار",
+        "processing": "قيد المعالجة",
+        "completed": "مكتمل",
+        "cancelled": "ملغي"
+      },
+      "actions": {
+        "view": "عرض"
+      }
+    },
+    "customersPage": {
+      "title": "العملاء",
+      "subtitle": "إدارة العملاء",
+      "exportCustomers": "تصدير العملاء",
+      "searchPlaceholder": "البحث عن العملاء...",
+      "table": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "orders": "الطلبات",
+        "totalSpent": "إجمالي المشتريات",
+        "lastOrder": "آخر طلب",
+        "actions": "الإجراءات"
+      }
+    },
+    "usersPage": {
+      "title": "المستخدمين",
+      "subtitle": "إدارة المستخدمين",
+      "searchPlaceholder": "البحث عن المستخدمين...",
+      "loading": "جاري تحميل المستخدمين...",
+      "noUsers": "لا يوجد مستخدمين",
+      "noSearchResults": "لا توجد نتائج للبحث",
+      "table": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "phone": "رقم الهاتف",
+        "registrationDate": "تاريخ التسجيل",
+        "lastUpdated": "آخر تحديث",
+        "role": "الدور",
+        "lastLogin": "آخر تسجيل دخول",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "roles": {
+        "admin": "مدير",
+        "editor": "محرر",
+        "viewer": "مشاهد"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "error": {
+        "title": "خطأ في جلب المستخدمين",
+        "description": "حدث خطأ أثناء جلب بيانات المستخدمين"
+      }
+    },
+    "settingsPage": {
+      "title": "الإعدادات",
+      "saveChanges": "حفظ التغييرات",
+      "account": {
+        "title": "إعدادات الحساب",
+        "email": "البريد الإلكتروني",
+        "displayName": "اسم العرض"
+      },
+      "notifications": {
+        "title": "الإشعارات",
+        "emailNotifications": {
+          "title": "إشعارات البريد الإلكتروني",
+          "description": "تلقي بريد إلكتروني حول الطلبات الجديدة"
+        },
+        "orderUpdates": {
+          "title": "تحديثات الطلبات",
+          "description": "تلقي إشعارات حول تغييرات حالة الطلب"
+        }
+      },
+      "security": {
+        "title": "الأمان",
+        "currentPassword": "كلمة المرور الحالية",
+        "newPassword": "كلمة المرور الجديدة",
+        "confirmPassword": "تأكيد كلمة المرور الجديدة"
+      },
+      "preferences": {
+        "title": "التفضيلات",
+        "darkMode": {
+          "title": "الوضع الداكن",
+          "description": "تفعيل الوضع الداكن للوحة التحكم"
+        }
+      },
+      "toast": {
+        "success": "تم حفظ الإعدادات",
+        "description": "تم حفظ الإعدادات بنجاح"
+      }
+    },
+    "dashboardPage": {
+      "overview": "نظرة عامة",
+      "lastUpdated": "آخر تحديث: قبل {{time}}",
+      "stats": {
+        "totalRevenue": "إجمالي الإيرادات",
+        "activeOrders": "الطلبات النشطة",
+        "totalCustomers": "إجمالي العملاء",
+        "lowStockItems": "المنتجات منخفضة المخزون",
+        "vsLastMonth": "مقارنة بالشهر الماضي",
+        "newToday": "جديد اليوم",
+        "newUsers": "مستخدمين جدد",
+        "alert": "تنبيه",
+        "needsAttention": "يحتاج إلى اهتمام"
+      },
+      "charts": {
+        "revenueOverview": "نظرة عامة على الإيرادات",
+        "revenueBreakdown": "تفصيل الإيرادات الشهرية",
+        "ordersTrend": "اتجاه الطلبات",
+        "ordersSummary": "ملخص الطلبات الشهرية"
+      },
+      "recentOrders": {
+        "title": "أحدث الطلبات",
+        "subtitle": "آخر 4 طلبات تم استلامها",
+        "orderNumber": "رقم الطلب",
+        "customer": "العميل",
+        "amount": "المبلغ",
+        "status": "الحالة",
+        "statuses": {
+          "completed": "مكتمل",
+          "processing": "قيد المعالجة",
+          "pending": "قيد الانتظار"
+        }
+      }
+    }
+  },
+  "footer": {
+    "navigation": {
+      "men": "رجال",
+      "women": "نساء",
+      "kids": "أطفال",
+      "about": "عن المتجر"
+    },
+    "customerService": {
+      "title": "خدمة العملاء",
+      "shipping": "معلومات الشحن",
+      "returns": "سياسة الإرجاع",
+      "faq": "الأسئلة الشائعة"
+    },
+    "newsletter": {
+      "title": "النشرة البريدية",
+      "description": "اشترك في نشرتنا البريدية للحصول على آخر العروض والأخبار",
+      "placeholder": "أدخل بريدك الإلكتروني",
+      "subscribe": "اشترك"
+    },
+    "copyright": " 2024 رايان عرب. جميع الحقوق محفوظة."
+  }
+}
