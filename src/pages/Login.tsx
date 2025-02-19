@@ -64,7 +64,7 @@ const Login = () => {
     
     if (isLogin) {
       // Check for admin credentials
-      if (email === "captainryanarab@gmail.com" && password === "Itis2025@") {
+      if (email === "captainryanarab@gmail.com" && password === "adminpass") {
         setIsAdmin(true);
         toast({
           title: t('auth.toast.adminLoginSuccess'),
