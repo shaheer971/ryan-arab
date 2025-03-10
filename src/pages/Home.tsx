@@ -116,18 +116,28 @@ const Home = () => {
           className="relative text-center text-white space-y-6 max-w-3xl mx-auto px-4"
         >
           <h1 className="font-jakarta text-5xl md:text-7xl font-bold">
-            Step into Luxury
+            The Future of Luxury. Rooted in Heritage.
           </h1>
           <p className="text-lg md:text-xl text-white/90 font-satoshi">
-            Discover our curated collection of premium footwear
+            Designed by Saudis. Crafted by the world's finest shoemakers. Engineered through years of research. Some of our shoes? Fully designed by AI. Welcome to the next era of luxury footwear.
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-white text-black hover:bg-white/90"
-          >
-            <Link to="/men">Shop Now</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button
+              asChild
+              size="lg"
+              className="bg-white text-black hover:bg-white/90"
+            >
+              <Link to="/collection">Discover the Collection</Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white/10"
+            >
+              <Link to="/about">Explore the Craft</Link>
+            </Button>
+          </div>
         </motion.div>
       </section>
 
