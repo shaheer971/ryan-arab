@@ -20,7 +20,7 @@ const About = () => {
           {/* Vision Statement */}
           <div className="max-w-4xl mx-auto text-center mb-24">
             <p className="text-2xl leading-relaxed text-gray-700 font-satoshi">
-              Ryan Arab is not just a brand—it's the product of years of fashion research and development. Owned by RAHG (Ryan Arab Holding Group), our journey began with a commitment to redefining luxury through technology, craftsmanship, and ethical sourcing.
+              Ryan Arab is not just a brand, it's the product of years of fashion research and development. Owned by RAHG (Ryan Arab Holding Group), our journey began with a commitment to redefining luxury through technology, craftsmanship, and ethical sourcing.
             </p>
             <p className="text-2xl leading-relaxed text-gray-700 font-satoshi mt-8">
               Based in Riyadh, we design many of our shoes in Saudi Arabia while partnering with the finest shoemakers across Italy, Turkey, Vietnam, China, and Pakistan. Some of our creations are even designed by AI, blending the power of artificial intelligence with human artistry to create truly unique footwear.
@@ -57,7 +57,7 @@ const About = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="space-y-6">
                 <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6">
                   <Factory className="h-8 w-8 text-emerald-600" />
