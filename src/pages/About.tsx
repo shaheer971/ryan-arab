@@ -69,7 +69,7 @@ const About = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6">
+                <div className="h-16 w-16 rounded-2xl bg-black-20 flex items-center justify-center mb-6">
                   <Leaf className="h-8 w-8 text-emerald-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 font-jakarta">Luxury Without Harm</h3>
@@ -78,15 +78,6 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6">
-                  <Sparkles className="h-8 w-8 text-emerald-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 font-jakarta">The AI Revolution in Design</h3>
-                <p className="text-gray-600 text-lg leading-relaxed">
-                  Some of our designs are not just handmade—they are AI-made. With advanced algorithms, we push the boundaries of creativity, merging technology with luxury craftsmanship.
-                </p>
-              </div>
             </div>
           </div>
         </div>
