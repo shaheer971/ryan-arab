@@ -8,7 +8,7 @@ const About = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-gray-100" />
         <div className="absolute inset-0 bg-[url('/patterns/texture.svg')] opacity-[0.15]" />
         <div className="container relative mx-auto px-4 text-center">
-          <h1 className="font-jakarta text-6xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent animate-slide-up">
+          <h1 className="font-jakarta text-6xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-black-600 to-black-800 bg-clip-text text-transparent animate-slide-up">
             Luxury, Innovation, and Saudi Excellence.
           </h1>
         </div>
@@ -33,15 +33,15 @@ const About = () => {
           {/* Key Sections */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
             <div className="bg-gradient-to-br from-emerald-50 to-gray-50 rounded-2xl p-8 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-emerald-800 mb-4 font-jakarta">A Saudi Vision, A Global Standard</h3>
+              <h3 className="text-2xl font-bold text-black-800 mb-4 font-jakarta">A Saudi Vision, A Global Standard</h3>
               <p className="text-gray-600 text-lg">Emphasize Saudi-led design with international craftsmanship.</p>
             </div>
             <div className="bg-gradient-to-br from-emerald-50 to-gray-50 rounded-2xl p-8 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-emerald-800 mb-4 font-jakarta">Years of Research, One Goal</h3>
+              <h3 className="text-2xl font-bold text-black-800 mb-4 font-jakarta">Years of Research, One Goal</h3>
               <p className="text-gray-600 text-lg">Introduce RAHG's fashion R&D expertise.</p>
             </div>
             <div className="bg-gradient-to-br from-emerald-50 to-gray-50 rounded-2xl p-8 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-emerald-800 mb-4 font-jakarta">AI Meets Artisanship</h3>
+              <h3 className="text-2xl font-bold text-black-800 mb-4 font-jakarta">AI Meets Artisanship</h3>
               <p className="text-gray-600 text-lg">Highlight the ChatGPT-designed shoes as a luxury-tech breakthrough.</p>
             </div>
           </div>
@@ -49,7 +49,7 @@ const About = () => {
           {/* Craftsmanship & Materials Section */}
           <div className="bg-white rounded-3xl p-12 shadow-2xl mb-32">
             <div className="text-center mb-16">
-              <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent font-jakarta">
+              <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-black-600 to-black-800 bg-clip-text text-transparent font-jakarta">
                 Where Tradition Meets Technology
               </h2>
               <p className="text-xl text-gray-600 max-w-4xl mx-auto font-satoshi">
@@ -59,8 +59,8 @@ const About = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="space-y-6">
-                <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6">
-                  <Factory className="h-8 w-8 text-emerald-600" />
+                <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-6">
+                  <Factory className="h-8 w-8 text-black-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 font-jakarta">Designed by Saudis, Crafted Worldwide</h3>
                 <p className="text-gray-600 text-lg leading-relaxed">
@@ -69,8 +69,8 @@ const About = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="h-16 w-16 rounded-2xl bg-emerald-20 flex items-center justify-center mb-6">
-                  <Leaf className="h-8 w-8 text-emerald-600" />
+                <div className="h-16 w-16 rounded-2xl bg-gray-20 flex items-center justify-center mb-6">
+                  <Leaf className="h-8 w-8 text-black-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 font-jakarta">Luxury Without Harm</h3>
                 <p className="text-gray-600 text-lg leading-relaxed">
