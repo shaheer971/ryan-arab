@@ -8,6 +8,11 @@ const About = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white" />
         <div className="absolute inset-0 bg-[url('/patterns/texture.svg')] opacity-[0.15]" />
         <div className="container relative mx-auto px-4 text-center">
+          <img
+            src="/logo.png"
+            alt="Ryan Arab Logo"
+            className="mx-auto mb-6 h-24 w-auto"
+          />
           <h1 className="font-jakarta text-6xl md:text-5xl font-bold mb-6 text-black">
             Luxury, Innovation, and Saudi Excellence.
           </h1>
