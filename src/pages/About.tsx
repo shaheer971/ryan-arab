@@ -16,6 +16,14 @@ const About = () => {
           <h1 className="font-jakarta text-6xl md:text-5xl font-bold mb-6 text-black">
             Luxury, Innovation, and Saudi Excellence.
           </h1>
+          <a
+            href="https://ryanarab.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-4 px-8 py-3 bg-black text-white font-bold rounded-lg shadow hover:bg-gray-800 transition"
+          >
+            Visit Our Store
+        </a>
         </div>
       </section>
 
