@@ -9,7 +9,7 @@ const About = () => {
         <div className="absolute inset-0 bg-[url('/patterns/texture.svg')] opacity-[0.15]" />
         <div className="container relative mx-auto px-4 text-center">
           <img
-            src="/logo.png"
+            src="/logo.jpeg"
             alt="Ryan Arab Logo"
             className="mx-auto mb-6 h-24 w-auto"
           />
