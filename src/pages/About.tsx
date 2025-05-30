@@ -65,7 +65,7 @@ const About = () => {
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black font-jakarta mx-auto max-w-3xl">
                 Where Tradition Meets Technology
               </h2>
-              <p className="text-xl text-gray-700 max-w-4xl mx-auto font-satoshi">
+              <p className="text-l text-gray-700 max-w-4xl mx-auto font-satoshi">
                 Every Ryan Arab shoe is a result of meticulous craftsmanship and cutting-edge innovation. Whether designed by Saudi artisans or AI, each pair undergoes a strict auditing process to ensure perfection.
               </p>
             </div>
