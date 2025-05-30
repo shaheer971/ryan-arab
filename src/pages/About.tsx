@@ -62,10 +62,10 @@ const About = () => {
           {/* Craftsmanship & Materials Section */}
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-2xl mb-32">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black font-jakarta mx-auto max-w-3xl">
+              <h2 className="text-2xl md:text-5xl font-bold mb-6 text-black font-jakarta mx-auto max-w-3xl">
                 Where Tradition Meets Technology
               </h2>
-              <p className="text-l text-gray-700 max-w-4xl mx-auto font-satoshi">
+              <p className="text-xl text-gray-700 max-w-4xl mx-auto font-satoshi">
                 Every Ryan Arab shoe is a result of meticulous craftsmanship and cutting-edge innovation. Whether designed by Saudi artisans or AI, each pair undergoes a strict auditing process to ensure perfection.
               </p>
             </div>
