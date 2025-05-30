@@ -60,9 +60,9 @@ const About = () => {
           </div>
 
           {/* Craftsmanship & Materials Section */}
-          <div className="bg-white rounded-3xl p-12 shadow-2xl mb-32">
+          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-2xl mb-32">
             <div className="text-center mb-16">
-              <h2 className="text-5xl font-bold mb-6 text-black font-jakarta">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black font-jakarta mx-auto max-w-3xl">
                 Where Tradition Meets Technology
               </h2>
               <p className="text-xl text-gray-700 max-w-4xl mx-auto font-satoshi">
